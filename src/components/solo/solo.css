@@ -1,0 +1,47 @@
+/*
+ * Solo OS look: tokens and shared component styles for pages built with
+ * src/components/solo/kit.tsx. Scoped to .solo so the other pages are
+ * untouched. Keep new colours, spacing values and variants in line with
+ * src/app/solo-theme.css.
+ */
+.solo {
+  --bg: #f7f8f6; --surface: #fefefe; --surface-2: #e8e7e2; --ink: #1c1a17;
+  --muted: rgba(28, 26, 23, 0.55); --muted-2: rgba(28, 26, 23, 0.40);
+  --hairline: rgba(28, 26, 23, 0.09); --fill-subtle: rgba(28, 26, 23, 0.045);
+  --accent: #16C97E; --strain: #29A4FF; --hrv: #E6A52F;
+  --eyebrow: 0.6875rem; --body-sm: 0.875rem; --body: 1rem; --h3: 1.5rem;
+  --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px;
+  --radius-md: 8px; --radius-lg: 12px; --radius-pill: 999px;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1); --duration-fast: 180ms;
+  --lift: 0 1px 3px rgba(15, 15, 15, 0.06), 0 4px 12px -2px rgba(15, 15, 15, 0.07);
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-solo), 'Inter', system-ui, sans-serif;
+  height: 100%; overflow-y: auto; -webkit-font-smoothing: antialiased;
+}
+.dark .solo {
+  --bg: #0E1116; --surface: #161A21; --surface-2: #1C2129; --ink: #FFFFFF;
+  --muted: rgba(255, 255, 255, 0.55); --muted-2: rgba(255, 255, 255, 0.38);
+  --hairline: rgba(255, 255, 255, 0.07); --fill-subtle: rgba(255, 255, 255, 0.04);
+}
+/* Rule 5: one .stack per page owns the vertical rhythm (32px). */
+.solo .stack { display: flex; flex-direction: column; gap: var(--space-6); max-width: 860px; margin: 0 auto; padding: var(--space-6) var(--space-5) 96px; }
+@media (max-width: 639px) { .solo .stack { padding: var(--space-5) var(--space-4) 96px; } }
+.solo .card { background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius-lg); box-shadow: var(--lift); padding: var(--space-4) var(--space-5); }
+.solo .eyebrow { font-size: var(--eyebrow); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+.solo .input { width: 100%; background: var(--surface); color: var(--ink); border: 1px solid var(--hairline); border-radius: var(--radius-md); box-shadow: var(--lift); padding: 12px 16px; font-size: var(--body); font-family: inherit; outline: none; }
+.solo .input::placeholder { color: var(--muted-2); }
+.solo .input:focus { border-color: var(--muted-2); }
+/* Key-sentence highlight: the "filled" green from DESIGN_UI (accent at 12%, as on filledPillStyle). */
+.solo mark.key { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--ink); border-radius: 3px; padding: 1px 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.solo .prose { font-size: var(--body); line-height: 1.65; white-space: pre-wrap; margin: 0; }
+.solo details > summary { cursor: pointer; font-size: var(--body-sm); color: var(--muted); list-style: none; }
+.solo details > summary::-webkit-details-marker { display: none; }
+/* Library grid. Tiles are media, so they sit flush: hairline, no lift (as vault items in DESIGN_UI Rule 2). */
+.solo .stack.wide { max-width: 1280px; }
+.solo .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-2); }
+.solo .tile { position: relative; aspect-ratio: 1; border: 1px solid var(--hairline); border-radius: var(--radius-md); overflow: hidden; background: var(--surface-2); cursor: pointer; padding: 0; }
+.solo .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.solo .tile .badge { position: absolute; left: 6px; bottom: 6px; background: rgba(14, 17, 22, 0.72); color: #fff; font-size: var(--eyebrow); font-weight: 600; border-radius: var(--radius-pill); padding: 2px 8px; }
+.solo .viewer { position: fixed; inset: 0; z-index: 50; background: rgba(14, 17, 22, 0.86); display: flex; align-items: center; justify-content: center; padding: var(--space-4); }
+.solo .viewer .panel { background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius-lg); max-width: 1100px; width: 100%; max-height: 100%; overflow: auto; display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); }
+.solo .viewer img, .solo .viewer video { width: 100%; max-height: 70vh; object-fit: contain; border-radius: var(--radius-md); background: var(--surface-2); }

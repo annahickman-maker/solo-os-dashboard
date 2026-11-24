@@ -1,0 +1,395 @@
+/*
+ * Solo OS theme.
+ * Solo OS colours on Whoop-style surfaces. Desktop keeps every stock size,
+ * padding, gap, radius and font; only colour and surface change here.
+ * Works by re-pointing the variables the existing utility classes read, so
+ * page markup needs almost no changes. Imported after globals.css.
+ * Light mode rule: never a black or ink-filled banner.
+ */
+
+/* ── tokens ─────────────────────────────────────────────────────────────── */
+html:not(.dark) {
+  --so-canvas: linear-gradient(180deg, #E9EAE6 0%, #F1F2EF 45%, #F7F8F6 100%);
+  --so-canvas-base: #F7F8F6;
+  --so-nav-bg: rgba(247, 248, 246, 0.70);
+  --so-edge: rgba(28, 26, 23, 0.06);
+  --so-panel: #FEFEFE;
+  --so-card: #FEFEFE;
+  --so-well: #ECEBE6;
+  --so-seg-on: #FEFEFE;
+  --so-div: rgba(28, 26, 23, 0.06);
+  --so-div-2: rgba(28, 26, 23, 0.08);
+  --so-ink: #1C1A17;
+  --so-t2: rgba(28, 26, 23, 0.82);
+  --so-t3: rgba(28, 26, 23, 0.68);
+  --so-muted: rgba(28, 26, 23, 0.55);
+  --so-t5: rgba(28, 26, 23, 0.50);
+  --so-faint: rgba(28, 26, 23, 0.40);
+  --so-label: rgba(28, 26, 23, 0.62);
+  --so-chip: rgba(28, 26, 23, 0.05);
+  --so-chip-ink: rgba(28, 26, 23, 0.70);
+  --so-primary: #1C1A17;
+  --so-primary-ink: #FFFFFF;
+  --so-contrast: #E8E7E2;
+  --so-contrast-ink: #1C1A17;
+  --so-contrast-muted: rgba(28, 26, 23, 0.55);
+  --so-contrast-btn: #FEFEFE;
+  --so-tab: rgba(254, 254, 254, 0.94);
+  --so-tab-shadow: 0 8px 24px rgba(28, 26, 23, 0.12);
+  --so-lost: rgba(28, 26, 23, 0.30);
+  --so-ring-new: rgba(22, 201, 126, 0.30);
+  --so-ring-writing: rgba(22, 201, 126, 0.45);
+  --so-scrim: rgba(0, 0, 0, 0.45);
+}
+
+html.dark {
+  --so-canvas: linear-gradient(180deg, #1B2028 0%, #12161C 45%, #0E1116 100%);
+  --so-canvas-base: #0E1116;
+  --so-nav-bg: rgba(14, 17, 22, 0.55);
+  --so-edge: rgba(255, 255, 255, 0.04);
+  --so-panel: #161A21;
+  --so-card: #1C2129;
+  --so-well: #1C2129;
+  --so-seg-on: #2A313C;
+  --so-div: rgba(255, 255, 255, 0.045);
+  --so-div-2: rgba(255, 255, 255, 0.06);
+  --so-ink: #FFFFFF;
+  --so-t2: rgba(255, 255, 255, 0.80);
+  --so-t3: rgba(255, 255, 255, 0.68);
+  --so-muted: rgba(255, 255, 255, 0.55);
+  --so-t5: rgba(255, 255, 255, 0.50);
+  --so-faint: rgba(255, 255, 255, 0.38);
+  --so-label: rgba(255, 255, 255, 0.62);
+  --so-chip: rgba(255, 255, 255, 0.06);
+  --so-chip-ink: rgba(255, 255, 255, 0.72);
+  --so-primary: #FFFFFF;
+  --so-primary-ink: #0E1116;
+  --so-contrast: #000000;
+  --so-contrast-ink: #FFFFFF;
+  --so-contrast-muted: rgba(255, 255, 255, 0.55);
+  --so-contrast-btn: #232934;
+  --so-tab: rgba(28, 33, 41, 0.92);
+  --so-tab-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --so-lost: rgba(255, 255, 255, 0.30);
+  --so-ring-new: rgba(22, 201, 126, 0.30);
+  --so-ring-writing: rgba(22, 201, 126, 0.45);
+  --so-scrim: rgba(0, 0, 0, 0.45);
+}
+
+/* Status colours, both modes. */
+html {
+  --so-blue: #29A4FF;
+  --so-amber: #E6A52F;
+  --so-slate: #9DB7D1;
+  --so-green: #16C97E;
+  --so-red: #FF4D4D;
+}
+
+/* ── re-point the starter's palette onto the tokens ─────────────────────── */
+html.dark,
+html:not(.dark) {
+  --color-minimal-bg: var(--so-panel);
+  --color-minimal-row: var(--so-well);
+  --color-minimal-card: var(--so-card);
+  --color-minimal-border: var(--so-div);
+  --color-minimal-muted: var(--so-muted);
+  --color-minimal-accent: var(--so-ink);
+
+  --color-white: var(--so-ink);
+  --color-black: var(--so-primary-ink);
+
+  --color-zinc-100: var(--so-ink);
+  --color-zinc-200: var(--so-t2);
+  --color-zinc-300: var(--so-t2);
+  --color-zinc-400: var(--so-t3);
+  --color-zinc-500: var(--so-muted);
+  --color-zinc-600: var(--so-faint);
+  --color-zinc-700: var(--so-div-2);
+  --color-zinc-800: var(--so-well);
+  --color-zinc-900: var(--so-panel);
+
+  --color-blue-400: var(--so-blue);
+  --color-blue-500: var(--so-blue);
+  --color-yellow-400: var(--so-amber);
+  --color-yellow-500: var(--so-amber);
+  --color-amber-400: var(--so-amber);
+  --color-amber-500: var(--so-amber);
+  --color-violet-400: var(--so-slate);
+  --color-purple-400: var(--so-slate);
+  --color-green-300: var(--so-green);
+  --color-green-400: var(--so-green);
+  --color-green-500: var(--so-green);
+  --color-emerald-300: var(--so-green);
+  --color-emerald-400: var(--so-green);
+  --color-emerald-500: var(--so-green);
+  --color-red-300: var(--so-red);
+  --color-red-400: var(--so-red);
+  --color-red-500: var(--so-red);
+
+  --color-status-planned: var(--so-faint);
+  --color-status-draft: var(--so-faint);
+  --color-status-approved: var(--so-slate);
+  --color-status-writing: var(--so-amber);
+  --color-status-published: var(--so-green);
+  --color-status-archived: var(--so-lost);
+
+  /* shadcn tokens */
+  --background: var(--so-canvas-base);
+  --foreground: var(--so-ink);
+  --card: var(--so-card);
+  --card-foreground: var(--so-ink);
+  --popover: var(--so-panel);
+  --popover-foreground: var(--so-ink);
+  --primary: var(--so-primary);
+  --primary-foreground: var(--so-primary-ink);
+  --secondary: var(--so-well);
+  --secondary-foreground: var(--so-t2);
+  --muted: var(--so-well);
+  --muted-foreground: var(--so-muted);
+  --accent: var(--so-well);
+  --accent-foreground: var(--so-ink);
+  --destructive: var(--so-red);
+  --border: var(--so-div);
+  --input: var(--so-well);
+  --ring: var(--so-faint);
+}
+
+/* ── surfaces ───────────────────────────────────────────────────────────── */
+body {
+  background: var(--so-canvas-base);
+  background-image: var(--so-canvas);
+  background-attachment: fixed;
+  color: var(--so-ink);
+}
+
+/* Bordered containers with no fill of their own become filled panels with no
+   visible outline (the 1px border stays for sizing, transparent). */
+main .border.rounded:not([class*="bg-"]):not(button):not(input):not(select):not(textarea):not(span):not(.so-col):not([class*="border-transparent"]),
+main .border.rounded-lg:not([class*="bg-"]):not(button):not(input):not(select):not(textarea):not(span):not(.so-col):not([class*="border-transparent"]),
+main .border.rounded-xl:not([class*="bg-"]):not(button):not(input):not(select):not(textarea):not(span):not(.so-col):not([class*="border-transparent"]),
+main .border.rounded-2xl:not([class*="bg-"]):not(button):not(input):not(select):not(textarea):not(span):not(.so-col):not([class*="border-transparent"]) {
+  background-color: var(--so-panel);
+  border-color: transparent;
+}
+
+/* Fields, chips and filled boxes: no outlines. */
+main input.border, main select.border, main textarea.border,
+main .border.bg-minimal-row, main .border.bg-minimal-bg, main .border.bg-minimal-card,
+.border.bg-minimal-bg {
+  border-color: transparent;
+}
+main input.border:focus, main select.border:focus, main textarea.border:focus {
+  border-color: var(--so-div-2);
+}
+
+/* Secondary (outline) buttons become filled wells. */
+main button.border:not([class*="bg-"]):not([class*="red-"]):not([class*="green-"]) {
+  background-color: var(--so-well);
+  border-color: transparent;
+  color: var(--so-t2);
+}
+main button.border:not([class*="bg-"]):not([class*="red-"]):not([class*="green-"]):hover {
+  color: var(--so-ink);
+}
+main button.border[class*="red-"] {
+  background-color: color-mix(in srgb, var(--so-red) 12%, transparent);
+  border-color: transparent;
+}
+
+/* Uppercase labels: table headers. */
+main th {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--so-label);
+}
+main thead tr { border-color: var(--so-div-2); }
+
+/* Mode bar (Articles): contrast surface. Light mode is warm grey, never black. */
+.so-contrast {
+  background-color: var(--so-contrast) !important;
+  border-color: transparent !important;
+  color: var(--so-contrast-ink);
+}
+.so-contrast .so-contrast-muted { color: var(--so-contrast-muted); }
+.so-contrast .so-contrast-btn {
+  background-color: var(--so-contrast-btn) !important;
+  border-color: transparent !important;
+  color: var(--so-contrast-ink) !important;
+}
+.so-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* "New" / "writing" cards: inset green ring instead of a border colour. */
+.so-ring-new { border-color: transparent !important; box-shadow: inset 0 0 0 1px var(--so-ring-new); }
+.so-ring-writing { border-color: transparent !important; box-shadow: inset 0 0 0 1px var(--so-ring-writing); }
+
+/* Sidebar */
+.so-sidebar {
+  background: var(--so-nav-bg);
+  border-right-color: var(--so-edge) !important;
+}
+
+/* Modal scrim */
+.bg-black\/80 { background-color: var(--so-scrim) !important; }
+
+::-webkit-scrollbar-thumb { background: var(--so-div-2); }
+::-webkit-scrollbar-thumb:hover { background: var(--so-faint); }
+html:not(.dark) ::-webkit-scrollbar-thumb { background: var(--so-div-2); }
+
+/* ── phone (<640px) ─────────────────────────────────────────────────────── */
+.so-mobile-only { display: none; }
+@media (max-width: 639px) {
+  .so-mobile-only { display: block; }
+  .so-desktop-only { display: none !important; }
+
+  /* Pages: the stock 48px side gutters become 16px; leave room for the tab bar. */
+  main .px-12 { padding-left: 16px !important; padding-right: 16px !important; }
+  main .mx-12 { margin-left: 16px !important; margin-right: 16px !important; }
+  main { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  main > header.h-20, main header.h-20 { height: auto; min-height: 56px; padding-top: 8px; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+  main footer.h-16 { display: none; }
+}
+
+/* Mobile top bar */
+.so-topbar {
+  height: 56px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: env(safe-area-inset-top);
+  box-sizing: content-box;
+  flex-shrink: 0;
+}
+.so-mark {
+  width: 32px; height: 32px; border-radius: 999px;
+  background: var(--so-primary); color: var(--so-primary-ink);
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.so-seg {
+  height: 36px; padding: 3px; border-radius: 999px;
+  background: var(--so-well);
+  display: inline-flex; align-items: center; gap: 2px; min-width: 0;
+}
+.so-seg > * {
+  height: 30px; padding: 0 12px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--so-faint); white-space: nowrap;
+}
+.so-seg > .on { background: var(--so-seg-on); color: var(--so-ink); }
+.so-seg > .arrow { padding: 0 8px; color: var(--so-muted); }
+.so-plus {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--so-primary); color: var(--so-primary-ink);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+/* Floating tab bar */
+.so-tabbar {
+  position: fixed; left: 12px; right: 12px;
+  bottom: calc(26px + env(safe-area-inset-bottom));
+  height: 64px; border-radius: 32px;
+  background: var(--so-tab); box-shadow: var(--so-tab-shadow);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  display: flex; align-items: center; justify-content: space-around;
+  z-index: 60;
+}
+.so-tabbar a, .so-tabbar button {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 10px; color: var(--so-faint); min-width: 56px;
+}
+.so-tabbar .on { color: var(--so-ink); font-weight: 600; }
+.so-tabbar svg { width: 24px; height: 24px; }
+
+/* More sheet */
+.so-scrim { position: fixed; inset: 0; background: var(--so-scrim); z-index: 70; }
+.so-sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 71;
+  background: var(--so-panel); border-radius: 28px 28px 0 0;
+  padding: 10px 16px calc(24px + env(safe-area-inset-bottom));
+  max-height: 85vh; overflow-y: auto;
+}
+.so-sheet .grip { width: 36px; height: 4px; border-radius: 999px; background: var(--so-div-2); margin: 0 auto 14px; }
+.so-sheet .group-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--so-label); padding: 12px 4px 8px; }
+.so-sheet .group { background: var(--so-well); border-radius: 16px; overflow: hidden; }
+.so-sheet .row {
+  height: 44px; padding: 0 16px; display: flex; align-items: center; gap: 12px;
+  font-size: 14px; font-weight: 500; color: var(--so-ink); width: 100%;
+}
+.so-sheet .row + .row { border-top: 1px solid var(--so-div); }
+.so-sheet .row svg { width: 20px; height: 20px; }
+.so-sheet .row .chev { margin-left: auto; color: var(--so-faint); }
+.so-switch { margin-left: auto; width: 40px; height: 24px; border-radius: 999px; background: var(--so-div-2); position: relative; transition: background .18s; }
+.so-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 999px; background: #fff; transition: transform .18s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.so-switch.on { background: var(--so-green); }
+.so-switch.on::after { transform: translateX(16px); }
+
+/* Mobile card list (Leads) */
+.so-mcard { background: var(--so-card); border-radius: 16px; padding: 14px 16px; display: block; }
+.so-mlist { display: flex; flex-direction: column; gap: 10px; }
+.so-msection { display: flex; justify-content: space-between; align-items: center; padding: 6px 4px 2px; color: var(--so-label); }
+
+/* Articles board: stacked stage sections on phones. */
+@media (max-width: 639px) {
+  main .so-board { flex-direction: column; overflow-x: visible; overflow-y: auto; gap: 20px; }
+  main .so-board .so-col { width: auto; margin: 0; padding: 0; }
+  main .so-board .so-col > div:last-child { overflow: visible; }
+  main .so-contrast { border-radius: 16px; }
+}
+
+/* -- Pages built with the .solo kit (src/components/solo) ---------------------
+   Same tokens and the stock dashboard sizing (Geist, 13/14px, 48px gutters,
+   8px card corners). Overrides solo.css. */
+html.dark .solo,
+html:not(.dark) .solo {
+  --bg: transparent;
+  --surface: var(--so-panel);
+  --surface-2: var(--so-well);
+  --ink: var(--so-ink);
+  --muted: var(--so-muted);
+  --muted-2: var(--so-faint);
+  --hairline: transparent;
+  --fill-subtle: var(--so-chip);
+  --accent: var(--so-green);
+  --strain: var(--so-blue);
+  --hrv: var(--so-amber);
+  --eyebrow: 11px;
+  --body-sm: 13px;
+  --body: 14px;
+  --h3: 18px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --lift: none;
+  background: transparent;
+  font-family: var(--font-sans), 'Geist Sans', system-ui, sans-serif;
+}
+html .solo .stack { max-width: none; margin: 0; gap: var(--space-5); padding: 28px 48px 48px; }
+html .solo .stack.wide { max-width: none; }
+html .solo .card { padding: var(--space-4) var(--space-5); }
+html .solo .eyebrow { font-weight: 700; letter-spacing: 0.1em; color: var(--so-label); }
+html .solo .input { background: var(--so-well); padding: 8px 12px; font-size: 14px; }
+html .solo .input:focus { border-color: var(--so-div-2); }
+html .solo .tile .badge { background: rgba(14, 17, 22, 0.72); }
+@media (max-width: 639px) {
+  html .solo .stack { padding: 8px 16px 24px; gap: 16px; }
+}
+
+/* Phone fixes for stock pages. */
+@media (max-width: 639px) {
+  main .so-filters { flex-wrap: wrap; gap: 8px; padding-top: 4px; }
+  main .so-filters > * { width: auto !important; flex: 1 1 0; min-width: 0; }
+  main .so-filters > :first-child { flex-basis: 100%; }
+  main .so-flow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  main .so-flow > :not(a) { display: none; }
+}
+
+/* Light mode: filled cards are white, wells stay warm grey. */
+html:not(.dark) main .rounded-xl.bg-minimal-row { background-color: var(--so-card); }

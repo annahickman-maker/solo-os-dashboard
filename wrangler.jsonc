@@ -1,0 +1,68 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // worker.ts wraps OpenNext's generated handler to add `scheduled` - see the
+  // file header. Reverting to ".open-next/worker.js" disables the cron and
+  // restores stock OpenNext behaviour.
+  "main": "worker.ts",
+  "name": "solo-os-dashboard",
+  // The CRM engine tick + social publish tick. Was a GitHub Action; GitHub
+  // throttles scheduled workflows, which stalls onboarding email.
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+  // Keep the workers.dev URL alive; add a custom-domain route here when you
+  // claim one, e.g. { "pattern": "backend.yourdomain.com", "custom_domain": true }
+  "workers_dev": true,
+  "compatibility_date": "2026-05-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "solo-os-dashboard"
+    },
+    {
+      "binding": "FRONTEND_WORKER",
+      "service": "solo-os-site"
+    }
+  ],
+  // Workers AI binding.
+  "ai": {
+    "binding": "AI"
+  },
+  "images": {
+    "binding": "IMAGES"
+  },
+  // Public marketing media is required, independently of optional social publishing.
+  // Create these owner-owned buckets first; see MEDIA.md.
+  "r2_buckets": [
+    { "binding": "PUBLIC_MEDIA", "bucket_name": "solo-os-public-media" },
+    // Outgoing post media. Must be publicly reachable (R2_PUBLIC_BASE) so platforms can collect each file.
+    { "binding": "SOCIAL_MEDIA", "bucket_name": "solo-os-social-media" },
+    // Library previews (thumbnails only, never originals). PRIVATE: no public
+    // access; the dashboard serves them to the signed-in owner. See LIBRARY.md.
+    { "binding": "LIBRARY_PREVIEWS", "bucket_name": "solo-os-library-previews" }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  // Non-secret env vars. Secrets (API keys) are set via `wrangler secret put`.
+  // Your manager replaces every REPLACE_ value during setup.
+  "vars": {
+    "SUPABASE_URL": "REPLACE_SUPABASE_URL",
+    "SUPABASE_ANON_KEY": "REPLACE_SUPABASE_ANON_KEY",
+    "NEXT_PUBLIC_SUPABASE_URL": "REPLACE_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "REPLACE_SUPABASE_ANON_KEY",
+    "SITE_URL": "REPLACE_SITE_URL",
+    "NEXT_PUBLIC_SITE_URL": "REPLACE_SITE_URL",
+    "OPENAI_IMAGE_MODEL": "gpt-image-1",
+    "SOCIAL_PUBLISHING_ENABLED": "false",
+    "SOCIAL_SCHEDULER_MODE": "native",
+    "R2_PUBLIC_BASE": "REPLACE_R2_PUBLIC_BASE"
+  }
+}

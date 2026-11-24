@@ -1,0 +1,41 @@
+/*
+ * Focus page. Layout, type and colour come from the shared dashboard
+ * utilities (src/components/crm/kit.tsx, re-pointed for light and dark in
+ * src/app/solo-theme.css). This file only holds what utilities cannot say:
+ * the dial and content grid cells, and the side panel motion.
+ */
+.focus-page {
+  --accent: var(--so-green);
+  --surface-2: var(--so-well);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Statement: a heading that is also a textarea. */
+.focus-statement { field-sizing: content; min-height: 1.3em; }
+
+/* Content counters: long form weeks and short form days. */
+.focus-cell { display: block; aspect-ratio: 1; border-radius: 2px; background: var(--so-div-2); }
+html:not(.dark) .focus-cell { background: var(--so-well); }
+.focus-cell.on, html:not(.dark) .focus-cell.on { background: var(--accent); }
+.focus-cell.part, html:not(.dark) .focus-cell.part { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+.focus-weeks { display: grid; grid-template-columns: repeat(52, minmax(0, 1fr)); gap: 3px; }
+.focus-weeks.ticks { margin-top: -6px; }
+.focus-weeks.ticks span, .focus-month.ticks span { font-size: 10px; color: var(--so-muted); white-space: nowrap; }
+.focus-months { display: flex; flex-direction: column; gap: 4px; }
+.focus-month { display: grid; grid-template-columns: 40px repeat(31, minmax(0, 1fr)); gap: 3px; align-items: center; }
+.focus-month.ticks { margin-top: 2px; }
+.focus-month.ticks span { text-align: center; }
+.focus-month-label { font-size: 11px; color: var(--so-muted); text-align: right; padding-right: 6px; text-transform: capitalize; }
+
+/* Set target side panel. */
+.focus-panel-wrap { animation: focus-fade 0.18s ease-out; }
+.focus-panel { animation: focus-slide 0.22s ease-out; }
+@keyframes focus-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes focus-slide { from { transform: translateX(40px); } to { transform: translateX(0); } }
+
+@media (max-width: 639px) {
+  .focus-weeks { gap: 1px; }
+  .focus-weeks.ticks { margin-top: -8px; }
+  .focus-weeks.ticks span, .focus-month.ticks span { font-size: 8px; }
+  .focus-month { grid-template-columns: 30px repeat(31, minmax(0, 1fr)); gap: 2px; }
+}
