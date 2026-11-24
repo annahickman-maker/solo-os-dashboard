@@ -284,6 +284,49 @@ export async function ytResumeVideoUpload(
   throw new Error("YouTube upload finished sending bytes but is not finalized yet");
 }
 
+/** videos.list takes up to 50 ids per call, at 1 quota unit per call. */
+export const YT_METRICS_BATCH = 50;
+
+/**
+ * Statistics for many videos in as few calls as possible (50 ids a call).
+ * A video YouTube no longer returns (deleted, private) is simply absent from
+ * the map. Any API error throws.
+ */
+export async function ytFetchMetricsMany(
+  accessToken: string,
+  videoIds: string[]
+): Promise<Map<string, MetricSnapshot>> {
+  const out = new Map<string, MetricSnapshot>();
+  const ids = [...new Set(videoIds.filter(Boolean))];
+  for (let i = 0; i < ids.length; i += YT_METRICS_BATCH) {
+    const chunk = ids.slice(i, i + YT_METRICS_BATCH);
+    const url = new URL(`${YT}/videos`);
+    url.searchParams.set("part", "statistics");
+    url.searchParams.set("id", chunk.join(","));
+    url.searchParams.set("maxResults", String(YT_METRICS_BATCH));
+    const res = await fetch(url.toString(), { headers: { Authorization: `Bearer ${accessToken}` } });
+    const data = (await res.json().catch(() => ({}))) as {
+      items?: Array<{ id?: string; statistics?: { viewCount?: string; likeCount?: string; commentCount?: string } }>;
+      error?: { message?: string };
+    };
+    if (!res.ok || data.error) throw new Error(data.error?.message || `YouTube stats fetch failed (HTTP ${res.status})`);
+    for (const item of data.items || []) {
+      if (!item.id) continue;
+      const st = item.statistics;
+      out.set(item.id, {
+        views: Number(st?.viewCount || 0),
+        likes: Number(st?.likeCount || 0),
+        comments: Number(st?.commentCount || 0),
+        shares: 0,
+        saves: 0,
+        reach: 0,
+        raw: { statistics: st || null },
+      });
+    }
+  }
+  return out;
+}
+
 export async function ytFetchMetrics(
   accessToken: string,
   videoId: string

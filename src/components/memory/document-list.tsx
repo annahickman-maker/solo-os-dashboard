@@ -3,25 +3,18 @@
 /** Everything in memory: filter by kind, search titles, newest first. */
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { api, EmptyState, GhostBtn, Loading, TextInput } from '@/components/crm/kit';
+import { api, EmptyState, GhostBtn, Loading } from '@/components/crm/kit';
+import { SectionHeading } from '@/components/solo/kit';
 import { docDate, docHref, KIND_LABEL, type DocumentSummary, type Kind } from './types';
 
 const PAGE = 30;
 
-export function DocumentList({ refreshKey }: { refreshKey: number }) {
-  const [kind, setKind] = useState<'' | Kind>('');
-  const [q, setQ] = useState('');
-  const [query, setQuery] = useState('');
+export function DocumentList({ refreshKey, kind = '' }: { refreshKey: number; kind?: '' | Kind }) {
+  const query = '';
   const [docs, setDocs] = useState<DocumentSummary[] | null>(null);
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState('');
-
-  // Typing settles for a moment before the list reloads.
-  useEffect(() => {
-    const t = setTimeout(() => setQuery(q.trim()), 300);
-    return () => clearTimeout(t);
-  }, [q]);
 
   const load = useCallback(
     async (offset: number) => {
@@ -54,27 +47,7 @@ export function DocumentList({ refreshKey }: { refreshKey: number }) {
 
   return (
     <section className="flex flex-col gap-6">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <div className="sm:flex-1">
-          <TextInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="filter transcripts" aria-label="Filter transcripts" />
-        </div>
-        <div role="tablist" aria-label="Kind" className="flex flex-wrap gap-2">
-          {([['', 'All'], ...(Object.keys(KIND_LABEL) as Kind[]).map((k) => [k, `${KIND_LABEL[k]}s`])] as ['' | Kind, string][]).map(([value, label]) => (
-            <button
-              key={value || 'all'}
-              type="button"
-              role="tab"
-              aria-selected={kind === value}
-              onClick={() => setKind(value)}
-              className={`text-[13px] px-3 py-1.5 rounded-full border transition-colors ${
-                kind === value ? 'border-zinc-400 text-white' : 'border-minimal-border text-minimal-muted hover:text-white'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <SectionHeading label="transcripts" count={docs ? total : undefined} />
       {error ? (
         <p role="alert" className="text-[13px] text-red-400">
           {error}

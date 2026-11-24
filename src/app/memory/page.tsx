@@ -8,31 +8,43 @@
  */
 import { useState } from 'react';
 import Link from 'next/link';
-import { PageHeader, PrimaryBtn, useToast } from '@/components/crm/kit';
+import { useToast } from '@/components/crm/kit';
+import { FilterTabs, ghostButtonStyle, solidButtonStyle } from '@/components/solo/kit';
+import type { Kind } from '@/components/memory/types';
 import { AddDocument } from '@/components/memory/add-document';
 import { AskPanel } from '@/components/memory/ask-panel';
 import { DocumentList } from '@/components/memory/document-list';
+
+const KIND_TABS = [
+  { value: '', label: 'all' },
+  { value: 'conversation', label: 'conversations' },
+  { value: 'content', label: 'content' },
+  { value: 'note', label: 'notes' },
+];
 
 export default function MemoryPage() {
   const { show, node: toastNode } = useToast();
   const [adding, setAdding] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [kind, setKind] = useState<'' | Kind>('');
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="stack wide">
       {toastNode}
-      <PageHeader title="Memory" className="!px-4 sm:!px-12">
-        <Link href="/memory/new" className="text-[13px] px-3.5 py-2 rounded-lg border border-minimal-border text-white hover:border-zinc-500">
-          New note
-        </Link>
-        <PrimaryBtn onClick={() => setAdding(true)}>Upload a file</PrimaryBtn>
-      </PageHeader>
-      <div className="flex-1 overflow-y-auto px-4 sm:px-12 pb-16">
-        <div className="flex flex-col gap-10 max-w-4xl">
-          <AskPanel />
-          <DocumentList refreshKey={refreshKey} />
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <h1 style={{ fontSize: 'var(--h3)', fontWeight: 600, margin: 0 }}>Memory</h1>
+        </div>
+        <div className="lib-actions">
+          <Link href="/memory/new" style={ghostButtonStyle}>New note</Link>
+          <button type="button" style={solidButtonStyle} onClick={() => setAdding(true)}>Upload</button>
         </div>
       </div>
+
+      <FilterTabs ariaLabel="kind" options={KIND_TABS} value={kind} onChange={(v) => setKind(v as '' | Kind)} />
+      <AskPanel />
+      <DocumentList refreshKey={refreshKey} kind={kind} />
+
       {adding && (
         <AddDocument
           uploadOnly

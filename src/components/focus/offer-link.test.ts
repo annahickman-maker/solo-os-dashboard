@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { emptyRung, derivedCustomers, normalizeOfferDoc, type OfferDoc } from '../offer/types.ts';
 import {
-  allTargets, deriveOfferTargets, focusOffer, hasOfferTargets, isOfferTarget, offerTargetId, setFocusOffer,
+  PICK_FOCUS_OFFER, allTargets, deriveOfferTargets, focusHeading, focusOffer, hasOfferTargets, isOfferTarget, offerTargetId, setFocusOffer,
   setOfferProgress, writeOfferTarget,
 } from './offer-link.ts';
 import { newPlan, normalizeFocusDoc, overallProgress } from './types.ts';
@@ -85,4 +85,27 @@ test('offerProgress survives a save round trip', () => {
   const back = normalizeFocusDoc(JSON.parse(JSON.stringify({ version: 1, current: p, archive: [] })));
   assert.deepEqual(back.current?.offerProgress, { course: { revenue: { start: 100, current: 300 } } });
   assert.deepEqual(normalizeFocusDoc({ current: { statement: 'x', offerProgress: [1, 2] } }).current?.offerProgress, {});
+});
+
+test('heading: the focus offer name, or the pick prompt when none is the focus', () => {
+  assert.deepEqual(focusHeading(focusOffer(doc())), { text: 'Course', pick: false });
+  assert.deepEqual(focusHeading(focusOffer(setFocusOffer(doc(), null))), { text: PICK_FOCUS_OFFER, pick: true });
+  assert.equal(PICK_FOCUS_OFFER, 'Pick a focus for the next 90 days');
+  const unnamed = setFocusOffer(doc(), 'bare');
+  assert.deepEqual(focusHeading(focusOffer(unnamed)), { text: 'untitled offer', pick: false });
+});
+
+test('product_slug is kept, trimmed, and defaults to null', () => {
+  const d = normalizeOfferDoc({ rungs: [{ id: 'a', product_slug: ' course ' }, { id: 'b' }, { id: 'c', product_slug: '' }] });
+  assert.deepEqual(d.rungs.map((r) => r.product_slug), ['course', null, null]);
+});
+
+test('revenue goal percent for the 90 days', async () => {
+  const { revenueGoalFor90, goalPercent } = await import('./offer-funnel-goal.ts');
+  assert.equal(revenueGoalFor90(null, false), null);
+  assert.equal(revenueGoalFor90(1000, true), 3000);
+  assert.equal(revenueGoalFor90(1000, false), 1000);
+  assert.equal(goalPercent(50000, 1000), '50% of goal');
+  assert.equal(goalPercent(5000, 1000), '5.0% of goal');
+  assert.equal(goalPercent(5000, null), '');
 });

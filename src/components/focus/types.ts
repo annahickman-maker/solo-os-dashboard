@@ -68,13 +68,19 @@ export type RevenueModel = (typeof REVENUE_MODELS)[number];
  * offerProgress instead (see ./hero.ts), and these are left as they are.
  */
 export interface FocusGoal {
+  /**
+   * Revenue goal: price x countTarget whenever a price is set (monthly for
+   * recurring). Plans saved before price existed keep their typed value.
+   */
   revenueTarget: number | null;
   revenueCurrent: number;
   countTarget: number | null; // members (recurring) or sales (one-time)
   countCurrent: number;
+  /** Price of membership per month (recurring) or price per sale (one-time). */
+  price: number | null;
 }
 
-export const EMPTY_GOAL: FocusGoal = { revenueTarget: null, revenueCurrent: 0, countTarget: null, countCurrent: 0 };
+export const EMPTY_GOAL: FocusGoal = { revenueTarget: null, revenueCurrent: 0, countTarget: null, countCurrent: 0, price: null };
 
 /** Publishing cadence the content counters are measured against. Kept across 90-day windows. */
 export interface FocusCadence {
@@ -239,12 +245,20 @@ function normOfferProgress(v: unknown): Record<string, OfferProgress> {
 const posOrNull = (v: unknown): number | null => { const n = num(v, NaN); return Number.isFinite(n) && n > 0 ? n : null; };
 const nonNeg = (v: unknown, fb: number) => { const n = num(v, fb); return n >= 0 ? n : fb; };
 
+/** price x count when a price is set (null without a count), else the legacy typed revenue. */
+export function goalRevenue(price: number | null, count: number | null, legacy: number | null): number | null {
+  if (price === null) return legacy;
+  return count !== null ? Math.round(price * count * 100) / 100 : null;
+}
+
 function normGoal(v: unknown): FocusGoal {
   if (!v || typeof v !== 'object') return { ...EMPTY_GOAL };
   const g = v as Record<string, unknown>;
+  const price = posOrNull(g.price);
+  const countTarget = posOrNull(g.countTarget);
   return {
-    revenueTarget: posOrNull(g.revenueTarget), revenueCurrent: nonNeg(g.revenueCurrent, 0),
-    countTarget: posOrNull(g.countTarget), countCurrent: nonNeg(g.countCurrent, 0),
+    revenueTarget: goalRevenue(price, countTarget, posOrNull(g.revenueTarget)), revenueCurrent: nonNeg(g.revenueCurrent, 0),
+    countTarget, countCurrent: nonNeg(g.countCurrent, 0), price,
   };
 }
 

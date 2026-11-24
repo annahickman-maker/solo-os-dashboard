@@ -4,7 +4,7 @@
  * Settings-driven navigation, shared by the desktop sidebar and the phone shell.
  *
  * Layout: an unlabelled top group (Focus, Analytics, Pipeline, Sales), then
- * "Marketing" (Content, Contacts, Email) and "Brand" (Brand, Memory, Library).
+ * "Marketing" (Content, Email with its Contacts tab) and "Brand" (Brand, Memory, Library).
  * The light mode switch and Setup sit pinned at the bottom.
  *
  * Focus, Content, Brand, Memory and Library are always shown. The optional
@@ -16,7 +16,8 @@ import { useEffect, useState } from 'react';
 import { loadDoc } from '@/lib/solo/client';
 import type { SoloIconName } from '@/components/solo-icons';
 
-export type NavItem = { href: string; label: string; iconName: SoloIconName };
+/** `also`: other routes that count as this room (e.g. Contacts lives under Email). */
+export type NavItem = { href: string; label: string; iconName: SoloIconName; also?: string[] };
 
 export type NavModuleKey = 'leads' | 'pipeline' | 'email' | 'analytics' | 'sales';
 export type NavModules = Record<NavModuleKey, boolean>;
@@ -43,18 +44,18 @@ export const SETUP_ITEM: NavItem = { href: '/crm/settings', label: 'Setup', icon
 const ANALYTICS: ModuleNavItem = { href: '/crm/analytics', label: 'Analytics', iconName: 'analytics', module: 'analytics', setupLabel: 'Analytics' };
 const PIPELINE: ModuleNavItem = { href: '/crm/pipeline', label: 'Pipeline', iconName: 'pipeline', module: 'pipeline', setupLabel: 'Client pipeline' };
 const SALES: ModuleNavItem = { href: '/sales', label: 'Sales', iconName: 'sales', module: 'sales', setupLabel: 'Sales' };
-const CONTACTS: ModuleNavItem = { href: '/crm/leads', label: 'Contacts', iconName: 'leads', module: 'leads', setupLabel: 'Contacts' };
-const EMAIL: ModuleNavItem = { href: '/crm/workflows', label: 'Email', iconName: 'email', module: 'email', setupLabel: 'Email' };
+// Email has two tabs: Email automations (/crm/workflows) and All contacts (/crm/leads).
+const EMAIL: ModuleNavItem = { href: '/crm/workflows', label: 'Email', iconName: 'email', module: 'email', setupLabel: 'Email and contacts', also: ['/crm/leads'] };
 
 /** Every room in nav order. Setup is pinned separately at the bottom. */
 export const NAV_GROUPS: NavGroup[] = [
   { label: null, items: [FOCUS_ITEM, ANALYTICS, PIPELINE, SALES] },
-  { label: 'Marketing', items: [CONTENT_ITEM, CONTACTS, EMAIL] },
+  { label: 'Marketing', items: [CONTENT_ITEM, EMAIL] },
   { label: 'Brand', items: [BRAND_ITEM, MEMORY_ITEM, LIBRARY_ITEM] },
 ];
 
 /** The optional rooms, in the order Setup lists their toggles. */
-export const MODULE_NAV: ModuleNavItem[] = [ANALYTICS, PIPELINE, SALES, CONTACTS, EMAIL];
+export const MODULE_NAV: ModuleNavItem[] = [ANALYTICS, PIPELINE, SALES, EMAIL];
 
 export const NAV_ITEMS: NavItem[] = [...NAV_GROUPS.flatMap((g) => g.items), SETUP_ITEM];
 
@@ -98,8 +99,11 @@ export function useNavModules(enabled = true): NavModules {
 
 /** Longest matching room for a path, or null. */
 export function activeHref(pathname: string, items: NavItem[] = NAV_ITEMS): string | null {
-  const match = items
-    .filter((i) => pathname === i.href || pathname.startsWith(`${i.href}/`))
-    .sort((a, b) => b.href.length - a.href.length)[0];
+  const hits = items.flatMap((i) =>
+    [i.href, ...(i.also || [])]
+      .filter((h) => pathname === h || pathname.startsWith(`${h}/`))
+      .map((h) => ({ href: i.href, len: h.length })),
+  );
+  const match = hits.sort((a, b) => b.len - a.len)[0];
   return match ? match.href : null;
 }

@@ -6,7 +6,8 @@
  */
 import { Fragment, useState } from 'react';
 import Link from 'next/link';
-import { api, PrimaryBtn } from '@/components/crm/kit';
+import { api } from '@/components/crm/kit';
+import { solidButtonStyle } from '@/components/solo/kit';
 import { docDate, docHref, KIND_LABEL, type Hit, type Source } from './types';
 
 type Answer = { answer: string; found: boolean; used: number[]; sources: Source[]; mode: string };
@@ -120,9 +121,10 @@ export function AskPanel() {
           void (keyMissing ? search() : ask());
         }}
       >
-        <div className="flex gap-2">
+        <div className="lib-bar">
           <input
-            className="flex-1 min-w-0 bg-transparent border border-minimal-border rounded-lg px-3 py-2 text-[14px] text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
+            className="input"
+            type="search"
             value={question}
             maxLength={1000}
             placeholder="what have I said about pricing?"
@@ -131,9 +133,9 @@ export function AskPanel() {
             autoFocus
             onChange={(e) => setQuestion(e.target.value)}
           />
-          <PrimaryBtn type="submit" disabled={!!busy || question.trim().length < 2}>
+          <button type="submit" style={solidButtonStyle} disabled={!!busy || question.trim().length < 2}>
             {busy ? 'Reading…' : keyMissing ? 'Search' : 'Ask'}
-          </PrimaryBtn>
+          </button>
         </div>
         {!keyMissing && question.trim().length >= 2 && (
           <button

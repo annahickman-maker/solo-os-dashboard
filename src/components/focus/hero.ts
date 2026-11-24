@@ -1,21 +1,24 @@
 /**
  * The Focus hero numbers: revenue and members (or sales) against the 90-day
- * target, read from one place.
+ * target, read from one place. The owner sets a number (members or sales)
+ * and a price; the revenue goal is number x price (monthly for recurring).
  *
- *   - Focus offer set (featured offer in the `offer` document): the targets
- *     are the offer's monthly revenue goal and customers per month, the same
- *     numbers the Offer tab shows. Editing them writes to the offer
- *     (./offer-link.ts writeOfferTarget). Current values are typed by the
- *     owner and kept in the plan's offerProgress for that offer.
- *   - No focus offer: targets and current values live in the plan's goal.
+ *   - Focus offer set (featured offer in the `offer` document): the price is
+ *     the offer's price (goal price when set) and the number is its target
+ *     customers, the same numbers the Offer tab shows. Editing them writes to
+ *     the offer (./offer-link.ts writeOfferPrice, writeOfferTarget).
+ *   - No focus offer: price and number live in the plan's goal.
+ *
+ * Current values used to be typed here; actuals now come from Sales.
  *
  * Pure functions only, so `node --test` can load this file.
  */
 import type { OfferPricingRung } from '../offer/types.ts';
-import { offerName, offerTargetValue, setOfferProgress, type OfferMetric } from './offer-link.ts';
-import { clamp01, type FocusGoal, type FocusPlan, type RevenueModel } from './types.ts';
+import { offerName, offerPrice, offerTargetValue } from './offer-link.ts';
+import { clamp01, goalRevenue, type FocusGoal, type FocusPlan, type RevenueModel } from './types.ts';
 
-export type GoalMetric = 'revenue' | 'count';
+/** What the Set target panel edits: the number of members or sales, and the price. */
+export type TargetField = 'count' | 'price';
 
 export interface HeroGoal {
   /** Where the targets come from. */
@@ -25,6 +28,9 @@ export interface HeroGoal {
   model: RevenueModel;
   /** Always "sales": one generic count for every business. */
   noun: 'members' | 'sales';
+  /** Price of membership per month (recurring) or price per sale (one-time). */
+  price: number | null;
+  /** number x price (monthly for recurring); legacy typed value when no price. */
   revenueTarget: number | null;
   revenueCurrent: number;
   countTarget: number | null;
@@ -42,46 +48,40 @@ export function metricNoun(model: RevenueModel): 'members' | 'sales' {
 
 const ratio = (current: number, target: number | null) => (target && target > 0 ? clamp01(current / target) : null);
 
-const OFFER_METRIC: Record<GoalMetric, OfferMetric> = { revenue: 'revenue', count: 'customers' };
-
 export function heroGoal(plan: Pick<FocusPlan, 'revenueModel' | 'goal' | 'offerProgress'>, rung: OfferPricingRung | null): HeroGoal {
+  let price: number | null;
   let revenueTarget: number | null;
   let countTarget: number | null;
   let revenueCurrent: number;
   let countCurrent: number;
   if (rung) {
     const p = plan.offerProgress[rung.id] ?? {};
-    revenueTarget = offerTargetValue(rung, 'revenue');
+    price = offerPrice(rung);
     countTarget = offerTargetValue(rung, 'customers');
+    revenueTarget = price && countTarget ? goalRevenue(price, countTarget, null) : offerTargetValue(rung, 'revenue');
     revenueCurrent = p.revenue?.current ?? 0;
     countCurrent = p.customers?.current ?? 0;
   } else {
-    ({ revenueTarget, countTarget, revenueCurrent, countCurrent } = plan.goal);
+    ({ price, countTarget, revenueCurrent, countCurrent } = plan.goal);
+    revenueTarget = goalRevenue(price, countTarget, plan.goal.revenueTarget);
   }
   return {
     source: rung ? 'offer' : 'focus', rungId: rung?.id ?? null, offerName: rung ? offerName(rung) : null,
     model: plan.revenueModel, noun: metricNoun(plan.revenueModel),
-    revenueTarget, revenueCurrent, countTarget, countCurrent,
+    price, revenueTarget, revenueCurrent, countTarget, countCurrent,
     progress: ratio(revenueCurrent, revenueTarget) ?? ratio(countCurrent, countTarget) ?? 0,
     targetSet: revenueTarget !== null || countTarget !== null,
   };
 }
 
-/** Sets a current value (revenue now, members or sales now) in the plan: offerProgress when a focus offer is set, else the goal. */
-export function setGoalCurrent<P extends Pick<FocusPlan, 'goal' | 'offerProgress'>>(
-  plan: P, rung: OfferPricingRung | null, metric: GoalMetric, value: number,
-): P {
-  const v = Number.isFinite(value) && value > 0 ? value : 0;
-  if (rung) return setOfferProgress(plan, rung.id, OFFER_METRIC[metric], { current: v });
-  const key: keyof FocusGoal = metric === 'revenue' ? 'revenueCurrent' : 'countCurrent';
-  return { ...plan, goal: { ...plan.goal, [key]: v } };
-}
-
-/** Sets a target in the plan's goal (no focus offer). 0 or less clears it. With a focus offer use writeOfferTarget instead. */
-export function setGoalTarget<P extends Pick<FocusPlan, 'goal'>>(plan: P, metric: GoalMetric, value: number | null): P {
+/**
+ * Sets the number (members or sales) or the price in the plan's goal (no
+ * focus offer) and keeps revenueTarget = price x number. 0 or less clears it.
+ * With a focus offer use writeOfferTarget / writeOfferPrice instead.
+ */
+export function setGoalTarget<P extends Pick<FocusPlan, 'goal'>>(plan: P, field: TargetField, value: number | null): P {
   const v = value !== null && Number.isFinite(value) && value > 0 ? value : null;
-  const key: keyof FocusGoal = metric === 'revenue' ? 'revenueTarget' : 'countTarget';
-  return { ...plan, goal: { ...plan.goal, [key]: v } };
+  const goal: FocusGoal = { ...plan.goal, [field === 'price' ? 'price' : 'countTarget']: v };
+  if (field === 'price' && v === null) goal.revenueTarget = null; // the old price x number no longer holds
+  return { ...plan, goal: { ...goal, revenueTarget: goalRevenue(goal.price, goal.countTarget, goal.revenueTarget) } };
 }
-
-export { OFFER_METRIC };

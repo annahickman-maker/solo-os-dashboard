@@ -47,6 +47,12 @@ export interface OfferPricingRung {
   /** The plan to raise the price: what triggers each step up. */
   pricing_plan: string;
   sales_page_url: string;
+  /**
+   * Slug of the Sales product this offer sells as. Orders of it count as the offer's sales.
+   * Normally the offer's own product (offer-<id>, made automatically, src/lib/money/offer-product.ts);
+   * another slug is the owner's "sells as" choice. null until the first sync: the own product is meant.
+   */
+  product_slug: string | null;
   sales_page_visitors_30d: number | null;
   sales_page_buyers_30d: number | null;
   /** Video sales letter link and its numbers, typed by the owner. */
@@ -345,6 +351,7 @@ function normalizeRung(r: Obj, i: number): OfferPricingRung {
     target_customers_per_month: num(r.target_customers_per_month),
     pricing_plan: req(r.pricing_plan),
     sales_page_url: req(r.sales_page_url),
+    product_slug: text(r.product_slug)?.trim() ?? null,
     sales_page_visitors_30d: num(r.sales_page_visitors_30d),
     sales_page_buyers_30d: num(r.sales_page_buyers_30d),
     vsl_url: req(r.vsl_url),

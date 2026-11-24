@@ -4,6 +4,7 @@
  * Add playbooks in brand/playbooks/index.ts.
  */
 import Link from 'next/link';
+import { EmptyState } from '@/components/crm/kit';
 import { loadBrandPlaybooks } from '@/lib/brand/playbook-store';
 
 export const dynamic = 'force-dynamic';
@@ -16,14 +17,10 @@ export default async function BrandIndexPage() {
   const playbooks = await loadBrandPlaybooks();
   return (
     <div className="flex-1 overflow-y-auto">
-      <p className="px-12 pt-6 pb-6 text-sm text-minimal-muted">
-        Every playbook you have run, newest first.
-      </p>
-
-      <div className="px-12 pb-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-w-6xl">
+      <div className="px-12 pt-6 pb-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-w-6xl">
         {playbooks.length === 0 && (
-          <div className="text-sm text-minimal-muted border border-dashed border-minimal-border rounded-lg p-8 text-center col-span-full">
-            No playbooks yet. Ask your brand strategist to run your research.
+          <div className="col-span-full">
+            <EmptyState title="No playbooks yet" hint="Ask your brand strategist to run your research." />
           </div>
         )}
         {playbooks.map(({ slug, playbook }, i) => {

@@ -10,11 +10,14 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { loadDoc } from '@/lib/solo/client';
+import { useNavModules } from '@/components/nav';
 import { newId, useSoloDoc } from '@/components/brand/use-solo-doc';
-import { Bar, DeleteButton, EMPTY_STATE, LoadState, Ring, SaveStatus, TextArea, patchById } from '@/components/brand/ui';
+import { offerProductSlug } from '@/lib/money/offer-product';
+import { sellsAsOwnProduct, useOfferProductSync } from './use-offer-product-sync';
+import { Bar, DeleteButton, LoadState, Ring, SaveStatus, TextArea, patchById } from '@/components/brand/ui';
 import { REPUTATION_DOC_KEY, normalizeReputationDoc, type ReputationWin } from '@/components/reputation/types';
 import {
-  OFFER_DOC_KEY, STAGE_META, TIER_META, emptyRung, isOfferEmpty, normalizeOfferDoc, offerScore, proofCompletion,
+  OFFER_DOC_KEY, STAGE_META, TIER_META, emptyRung, normalizeOfferDoc, offerScore, proofCompletion,
   validationCompletion, type OfferDoc, type OfferPricingRung,
 } from './types';
 import {
@@ -24,12 +27,32 @@ import {
 
 export type UpdateOffer = (fn: (d: OfferDoc) => OfferDoc) => void;
 type PerOffer = 'avatar' | 'pricing' | 'proof' | 'validation' | 'content' | 'score';
+type SalesProduct = { slug: string; name: string; metadata?: { offer_id?: unknown } | null };
+
+/** Sales products, for "sells as" (an edge case: each offer sells as its own product by default); empty while the Sales module is off. */
+function useSalesProducts(): SalesProduct[] {
+  const { sales } = useNavModules();
+  const [products, setProducts] = useState<SalesProduct[]>([]);
+  useEffect(() => {
+    if (!sales) return;
+    let live = true;
+    fetch('/api/crm/products?limit=200', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d: { products?: SalesProduct[] }) => { if (live) setProducts(Array.isArray(d.products) ? d.products : []); })
+      .catch(() => { if (live) setProducts([]); });
+    return () => { live = false; };
+  }, [sales]);
+  return sales ? products : [];
+}
 
 export function OfferView() {
   const { doc, loadError, reload, update, saveState, saveError, retrySave } = useSoloDoc(OFFER_DOC_KEY, normalizeOfferDoc);
   const [panel, setPanel] = useState<'avatars' | 'suite' | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [wins, setWins] = useState<ReputationWin[]>([]);
+  const products = useSalesProducts();
+  // Each named offer (and the focus offer) sells as its own Sales product, made and kept in step here.
+  useOfferProductSync(doc, saveState, update, sellsAsOwnProduct);
   const closePanel = useCallback(() => setPanel(null), []);
 
   useEffect(() => {
@@ -56,14 +79,14 @@ export function OfferView() {
   };
 
   const card = (r: OfferPricingRung) => (
-    <OfferCard key={r.id} rung={r} doc={doc} update={update} wins={wins}
+    <OfferCard key={r.id} rung={r} doc={doc} update={update} wins={wins} products={products}
       open={openId === r.id} onToggle={() => setOpenId(openId === r.id ? null : r.id)} />
   );
 
   return (
     <div className="stack">
       <div className="bp-topline">
-        {isOfferEmpty(doc) ? <span className="bp-muted">{EMPTY_STATE}</span> : <span />}
+        <span />
         <SaveStatus state={saveState} error={saveError} onRetry={retrySave} />
       </div>
 
@@ -84,7 +107,6 @@ export function OfferView() {
           <h2 style={{ fontSize: 18, fontWeight: 600, margin: '4px 0' }}>
             {doc.rungs.length === 0 ? 'no offers yet' : featured ? 'one focus, plus the rest' : 'pick one to focus on'}
           </h2>
-          <p className="bp-muted">Each offer in your suite. Open one for its avatar, pricing, proof, validation and conversions. Make one your focus for this sprint.</p>
         </div>
         {featured && card(featured)}
         {others.map(card)}
@@ -113,8 +135,8 @@ function PhaseCard({ title, description, state, complete, onOpen }: {
   );
 }
 
-function OfferCard({ rung, doc, update, wins, open, onToggle }: {
-  rung: OfferPricingRung; doc: OfferDoc; update: UpdateOffer; wins: ReputationWin[]; open: boolean; onToggle: () => void;
+function OfferCard({ rung, doc, update, wins, products, open, onToggle }: {
+  rung: OfferPricingRung; doc: OfferDoc; update: UpdateOffer; wins: ReputationWin[]; products: SalesProduct[]; open: boolean; onToggle: () => void;
 }) {
   const [panel, setPanel] = useState<PerOffer | null>(null);
   const close = useCallback(() => setPanel(null), []);
@@ -159,6 +181,24 @@ function OfferCard({ rung, doc, update, wins, open, onToggle }: {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <span className="bp-faint">Open any card below to edit that part of this offer.</span>
             <div className="bp-actions">
+              {(() => {
+                // Only for edge cases: by default an offer sells as its own product ("this offer").
+                const own = offerProductSlug(rung.id);
+                // Other offers' own products are left out; any product the owner made is offered.
+                const others = products.filter((p) => p.slug !== own && !p.metadata?.offer_id);
+                const chosen = rung.product_slug && rung.product_slug !== own ? rung.product_slug : own;
+                if (others.length === 0 && chosen === own) return null;
+                return (
+                  <select className="bp-input" style={{ width: 'auto' }} aria-label="Sells as" value={chosen}
+                    onChange={(e) => save({ product_slug: e.target.value || own })}>
+                    <option value={own}>sells as: this offer</option>
+                    {chosen !== own && !others.some((p) => p.slug === chosen) && (
+                      <option value={chosen}>sells as: {chosen}</option>
+                    )}
+                    {others.map((p) => <option key={p.slug} value={p.slug}>sells as: {p.name || p.slug}</option>)}
+                  </select>
+                );
+              })()}
               <button type="button" className="bp-btn" onClick={() => setFocus(!rung.featured)}>{rung.featured ? '★ unfocus' : '☆ make focus'}</button>
               <DeleteButton what="this offer" onDelete={() => update((d) => ({ ...d, rungs: d.rungs.filter((r) => r.id !== rung.id), emails: d.emails.filter((e) => e.rung_id !== rung.id) }))} />
             </div>

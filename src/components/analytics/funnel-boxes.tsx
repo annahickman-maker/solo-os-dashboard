@@ -68,9 +68,7 @@ export default function FunnelBoxes({ refresh = 0 }: { refresh?: number }) {
         {error ? (
           <p role="alert" className="text-sm text-red-400">{error}</p>
         ) : (
-          <p className="text-sm text-minimal-muted">
-            {shown?.unavailable.length ? `Not counted (no data yet): ${shown.unavailable.join(', ')}.` : 'From views to email to sales.'}
-          </p>
+          <span />
         )}
         <div role="group" aria-label="Funnel period" className="flex rounded border border-minimal-border text-xs">
           {FUNNEL_PERIODS.map((p) => (

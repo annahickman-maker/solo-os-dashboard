@@ -1,7 +1,7 @@
 /**
  * An in-memory stand-in for the Supabase client, for the money tests only.
  * It speaks the slice of the query builder the money code uses (select,
- * insert, update, delete; eq, is, lt, in, ilike, order, limit, range,
+ * insert, update, delete; eq, neq, is, lt, gte, lte, in, ilike, order, limit, range,
  * maybeSingle, single), enforces the unique columns of the migration
  * (answering code 23505 like Postgres), and can be told to fail a table's
  * reads or writes to prove errors are not swallowed.
@@ -114,6 +114,24 @@ class Builder implements PromiseLike<Result> {
     this.filters.push((r) => {
       const x = read(r, col);
       return x !== null && x !== undefined && (x as string | number) < v;
+    });
+    return this;
+  }
+  neq(col: string, v: unknown) {
+    this.filters.push((r) => read(r, col) !== v);
+    return this;
+  }
+  gte(col: string, v: string | number) {
+    this.filters.push((r) => {
+      const x = read(r, col);
+      return x !== null && x !== undefined && (x as string | number) >= v;
+    });
+    return this;
+  }
+  lte(col: string, v: string | number) {
+    this.filters.push((r) => {
+      const x = read(r, col);
+      return x !== null && x !== undefined && (x as string | number) <= v;
     });
     return this;
   }

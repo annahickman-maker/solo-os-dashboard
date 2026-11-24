@@ -11,13 +11,35 @@ import { useCallback, useState, type ReactNode } from 'react';
 // ── fetch helper ─────────────────────────────────────────────────────────────
 
 export async function api<T = Record<string, unknown>>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
+  // The signal is honoured here, not passed to fetch: aborting a real fetch in an
+  // effect cleanup surfaces as an "AbortError" overlay in the Next dev server.
+  // Callers still see a rejected promise when they abort, and ignore it as before.
+  const { signal, ...rest } = init || {};
+  if (signal?.aborted) throw abortError();
+  const run = (async () => {
+    const res = await fetch(path, {
+      ...rest,
+      headers: { 'Content-Type': 'application/json', ...(rest.headers || {}) },
+    });
+    const data = (await res.json().catch(() => ({}))) as T & { error?: string };
+    if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
+    return data;
+  })();
+  if (!signal) return run;
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(abortError());
+    signal.addEventListener('abort', onAbort, { once: true });
+    run.then(
+      (v) => { signal.removeEventListener('abort', onAbort); if (!signal.aborted) resolve(v); },
+      (e) => { signal.removeEventListener('abort', onAbort); if (!signal.aborted) reject(e); },
+    );
   });
-  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
-  return data;
+}
+
+function abortError(): Error {
+  const e = new Error('Request cancelled');
+  e.name = 'AbortError';
+  return e;
 }
 
 // ── toasts ───────────────────────────────────────────────────────────────────

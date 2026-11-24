@@ -12,7 +12,6 @@ import { STAGE_META, type OfferDoc } from '@/components/offer/types';
 import { focusOffer, offerName } from './offer-link';
 
 const OFFER_HREF = '/brand/offer';
-const TITLE = 'text-[13px] font-semibold text-zinc-300';
 
 export function OfferConnector({ doc, loadError, onPick }: {
   doc: OfferDoc | null; loadError: string;
@@ -33,8 +32,7 @@ export function OfferConnector({ doc, loadError, onPick }: {
   if (loadError) {
     return (
       <div className="flex flex-col gap-2">
-        <h2 className={TITLE}>Connecting to your offer</h2>
-        <div className="border border-dashed border-minimal-border rounded-lg px-4 py-4 text-[13px] text-red-400" role="alert">
+                <div className="border border-dashed border-minimal-border rounded-lg px-4 py-4 text-[13px] text-red-400" role="alert">
           Could not load your offers: {loadError}
         </div>
       </div>
@@ -49,8 +47,7 @@ export function OfferConnector({ doc, loadError, onPick }: {
   return (
     <div className="relative flex flex-col gap-2" ref={ref}>
       <div className="flex items-center justify-between gap-2">
-        <h2 className={TITLE}>Connecting to your offer</h2>
-        <Link href={OFFER_HREF} className="text-xs text-zinc-500 hover:text-white transition-colors">Open offer →</Link>
+                <Link href={OFFER_HREF} className="text-xs text-zinc-500 hover:text-white transition-colors">Open offer →</Link>
       </div>
       {rung ? (
         <button type="button" aria-haspopup="listbox" aria-expanded={open} title="change the focus offer" onClick={() => setOpen(!open)}

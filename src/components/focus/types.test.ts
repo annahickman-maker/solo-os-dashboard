@@ -63,10 +63,10 @@ test('normalizeFocusDoc fills goal, revenue model and cadence and keeps old fiel
   });
   assert.deepEqual(doc.cadence, { longFormPerWeek: 0.5, shortFormPerWeek: 3 });
   assert.equal(doc.current?.revenueModel, 'one-time');
-  assert.deepEqual(doc.current?.goal, { revenueTarget: 5000, revenueCurrent: 1200, countTarget: null, countCurrent: 3 });
+  assert.deepEqual(doc.current?.goal, { revenueTarget: 5000, revenueCurrent: 1200, countTarget: null, countCurrent: 3, price: null });
   assert.equal(doc.current?.milestones[0].title, 'Launch');
   assert.equal(doc.current?.week[0].weekday, 'mon');
   const old = normalizeFocusDoc({ current: { statement: 'Old' } });
   assert.equal(old.current?.revenueModel, 'recurring');
-  assert.deepEqual(old.current?.goal, { revenueTarget: null, revenueCurrent: 0, countTarget: null, countCurrent: 0 });
+  assert.deepEqual(old.current?.goal, { revenueTarget: null, revenueCurrent: 0, countTarget: null, countCurrent: 0, price: null });
 });

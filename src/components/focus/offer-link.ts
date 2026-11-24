@@ -6,15 +6,18 @@
  *   - Which offer is the focus: the rung with featured=true in the offer
  *     document. The focus document does not store an offer id, so the Offer
  *     tab's "make focus" button and the picker on /focus are the same switch.
- *   - The target numbers (monthly revenue, customers per month): the focus
- *     offer's target_revenue_per_month_usd and target_customers_per_month.
- *     Editing them from /focus writes back to the offer document.
+ *   - The target numbers (price and customers, and the monthly revenue that
+ *     follows from them): the focus offer's price labels,
+ *     target_customers_per_month and target_revenue_per_month_usd. Editing
+ *     them from /focus writes back to the offer document.
  *   - Start and current values: the owner types them on /focus. They live in
  *     the focus plan's offerProgress, keyed by offer id, so switching the
  *     focus offer and back keeps each offer's progress.
  *
- * Sales orders are not matched to offers: offers carry no product slug, so
- * there is no reliable join. Current values are typed by the owner.
+ * Current values are typed by the owner. The funnel under the heading reads
+ * real numbers for the offer through the product it sells as: its own,
+ * made automatically (src/lib/money/offer-product.ts), unless the owner
+ * picked another (rung.product_slug); see src/lib/analytics/funnel-summary.ts.
  *
  * Pure functions only, so `node --test` can load this file.
  */
@@ -43,6 +46,13 @@ export function isOfferTarget(t: FocusTarget): t is OfferTarget {
 /** The focus offer: the featured rung of the offer document, or null. */
 export function focusOffer(doc: OfferDoc | null | undefined): OfferPricingRung | null {
   return doc?.rungs.find((r) => r.featured) ?? null;
+}
+
+export const PICK_FOCUS_OFFER = 'Pick a focus for the next 90 days';
+
+/** The /focus heading: the focus offer's name, or a prompt to pick one (which opens Set target). */
+export function focusHeading(rung: OfferPricingRung | null): { text: string; pick: boolean } {
+  return rung ? { text: offerName(rung), pick: false } : { text: PICK_FOCUS_OFFER, pick: true };
 }
 
 /** The offer's target for a metric, or null when it has none. Customers follow revenue / price, as on the Offer tab. */
@@ -110,13 +120,47 @@ export function writeOfferTarget(doc: OfferDoc, rungId: string, metric: OfferMet
     patch = { target_revenue_per_month_usd: v, target_customers_per_month: v === null ? rung.target_customers_per_month : derivedCustomers(next) ?? rung.target_customers_per_month };
   } else {
     const customers = v === null ? null : Math.ceil(v);
-    const price = parsePriceLabel(rung.goal_price_label) ?? parsePriceLabel(rung.price_label);
+    const price = offerPrice(rung);
     if (customers === null || !price) {
       patch = { target_customers_per_month: customers, ...(customers === null && price ? { target_revenue_per_month_usd: null } : {}) };
     } else {
       patch = { target_customers_per_month: customers, target_revenue_per_month_usd: revenueFor(customers, price) };
     }
   }
+  return { ...doc, rungs: doc.rungs.map((r) => (r.id === rungId ? { ...r, ...patch } : r)) };
+}
+
+/** The offer's price: the goal price when it has one, else the current price (as derivedCustomers reads it). */
+export function offerPrice(rung: Pick<OfferPricingRung, 'goal_price_label' | 'price_label'>): number | null {
+  return parsePriceLabel(rung.goal_price_label) ?? parsePriceLabel(rung.price_label);
+}
+
+/** Puts a price into a price label, keeping its wording ("$47/mo" -> "$97/mo"). null clears the label. */
+export function priceLabelWith(label: string, price: number | null, recurring: boolean): string {
+  if (price === null) return '';
+  const n = price.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  if (parsePriceLabel(label) !== null) return label.replace(/\d[\d,]*(?:\.\d+)?/, n);
+  return recurring ? `$${n}/mo` : `$${n}`;
+}
+
+/**
+ * Writes the focus offer's price from /focus. The label in effect changes
+ * (the goal price when set, else the current price), the target customers
+ * stay, and the monthly revenue target follows customers x price.
+ * null or 0 clears that price.
+ */
+export function writeOfferPrice(doc: OfferDoc, rungId: string, value: number | null, recurring: boolean): OfferDoc {
+  const rung = doc.rungs.find((r) => r.id === rungId);
+  if (!rung) return doc;
+  const v = value !== null && Number.isFinite(value) && value > 0 ? value : null;
+  const count = offerTargetValue(rung, 'customers');
+  const labels: Partial<OfferPricingRung> = parsePriceLabel(rung.goal_price_label) !== null
+    ? { goal_price_label: priceLabelWith(rung.goal_price_label, v, recurring) }
+    : { price_label: priceLabelWith(rung.price_label, v, recurring) };
+  const price = offerPrice({ ...rung, ...labels });
+  const patch: Partial<OfferPricingRung> = count === null
+    ? labels
+    : { ...labels, target_customers_per_month: count, target_revenue_per_month_usd: price ? revenueFor(count, price) : null };
   return { ...doc, rungs: doc.rungs.map((r) => (r.id === rungId ? { ...r, ...patch } : r)) };
 }
 

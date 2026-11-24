@@ -1,5 +1,8 @@
 /**
- * GET /api/crm/dashboard - overview counts + recent activity for the CRM home.
+ * GET /api/crm/dashboard - overview counts + recent activity for the CRM home
+ * and the "Client pipeline" flow cards on /crm/analytics
+ * (src/lib/analytics/flow-cards.ts). open_by_stage counts open deals per
+ * stage, in pipeline order.
  *
  * Revenue this month comes from two places: deals won this month
  * (counts.won_this_month_cents, won_this_month_deals) and paid orders from
@@ -13,6 +16,7 @@ import { selectAllIn } from "@/lib/money/db-util";
 import { homeCurrency } from "@/lib/money/engagements";
 import { DEFAULT_CURRENCY } from "@/lib/money/money";
 import { paidTotals, type PaidTotal } from "@/lib/money/totals";
+import { stageBreakdown } from "@/lib/analytics/flow-cards";
 
 export async function GET(request: NextRequest) {
   const auth = await authenticateSessionOrApiKey(request);
@@ -73,14 +77,13 @@ export async function GET(request: NextRequest) {
   // { default_cents, stages: { "Stage name": cents } } - so an auto-filed
   // pipeline reads as a forecast instead of a misleading $0.
   let pipelineEstimateCents = pipelineValueCents;
-  const { data: estCfg } = await supabase
-    .from("backend_settings")
-    .select("value")
-    .eq("key", "crm_stage_estimates")
-    .maybeSingle();
+  const [{ data: estCfg }, { data: stageRows }] = await Promise.all([
+    supabase.from("backend_settings").select("value").eq("key", "crm_stage_estimates").maybeSingle(),
+    supabase.from("pipeline_stages").select("id, name, position"),
+  ]);
+  const openByStage = stageBreakdown(openOpps.data || [], stageRows ?? []);
   const estConf = (estCfg?.value ?? {}) as { default_cents?: number; stages?: Record<string, number> };
   if (estConf.default_cents || estConf.stages) {
-    const { data: stageRows } = await supabase.from("pipeline_stages").select("id, name");
     const stageNameById = new Map((stageRows ?? []).map((s) => [s.id, s.name]));
     for (const o of openOpps.data || []) {
       if (o.value_cents) continue;
@@ -134,6 +137,7 @@ export async function GET(request: NextRequest) {
       won_deals: (wonOpps.data || []).length,
       won_this_month_deals: wonMonthDeals,
     },
+    open_by_stage: openByStage,
     paid_this_month: paidThisMonth,
     home_currency: currency,
     upcoming_appointments: upcomingAppointments.data || [],

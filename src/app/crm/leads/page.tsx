@@ -1,5 +1,6 @@
 'use client';
 
+import { EmailTabs } from '@/components/crm/email-tabs';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -168,10 +169,12 @@ export default function LeadsPage() {
   return (
     <div className="flex flex-col h-full">
       {toastNode}
-      <PageHeader title={`Contacts · ${total}`} className="so-desktop-only">
+      <PageHeader title="Email" className="so-desktop-only">
         <GhostBtn onClick={() => setShowImport(true)}>Import CSV</GhostBtn>
         <PrimaryBtn onClick={() => setShowAdd(true)}>Add contact</PrimaryBtn>
       </PageHeader>
+      <EmailTabs />
+      <p className="px-4 sm:px-12 pb-3 text-xs text-zinc-500 shrink-0">{total} contacts</p>
 
       {/* Filters */}
       <div className="so-filters px-12 pb-4 flex items-center gap-3 shrink-0">

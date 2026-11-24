@@ -7,6 +7,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { FilterTabs, SectionHeading, ghostButtonStyle, solidButtonStyle } from '@/components/solo/kit';
+import { EmptyState } from '@/components/crm/kit';
 import { AssetViewer } from '@/components/library/asset-viewer';
 import { AddAsset } from '@/components/library/add-asset';
 import { LIBRARY_SOURCES, SOURCE_LABEL } from '@/lib/library/contract';
@@ -132,9 +133,6 @@ export default function LibraryPage() {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
           <h1 style={{ fontSize: 'var(--h3)', fontWeight: 600, margin: 0 }}>Library</h1>
-          <div className="lib-muted" style={{ marginTop: 4 }}>
-            Previews of your images and videos. Originals stay where they live; open one from its preview.
-          </div>
         </div>
         <div className="lib-actions">
           {status?.ready && status.youtube_connections > 0 && (
@@ -193,11 +191,9 @@ export default function LibraryPage() {
           {!items ? (
             <div className="lib-muted">loading...</div>
           ) : items.length === 0 ? (
-            <div className="lib-muted">
-              {search || kind || source || collection || tag || hidden
-                ? 'Nothing matches.'
-                : 'Nothing here yet. Add a link, import from YouTube, or ask your manager to sync a folder on your Mac.'}
-            </div>
+            search || kind || source || collection || tag || hidden
+              ? <EmptyState title="Nothing matches" />
+              : <EmptyState title="Nothing here yet" hint="Add a link, import from YouTube, or ask your manager to sync a folder on your Mac." />
           ) : (
             <div className="tiles">
               {items.map((a) => (

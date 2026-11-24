@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { api, EmptyState, Loading, PageHeader } from '@/components/crm/kit';
+import { api, EmptyState, Loading } from '@/components/crm/kit';
 
 type FunnelSummary = { funnel: string; sessions: number; domain: string | null };
 
@@ -36,6 +36,10 @@ const SCREEN_LABELS: Record<string, string> = {
   compiling: 'Generating plan',
   email: 'Email gate',
   landing: 'Plan + offer',
+  // The sales page site's own funnel ("sales-page"): visit, checkout, paid.
+  'sales-page': 'Sales page',
+  checkout: 'Opened checkout',
+  'thank-you': 'Thank-you page (paid)',
 };
 
 const CTA_LABELS: Record<string, string> = {
@@ -82,8 +86,10 @@ export default function FunnelAnalytics({ initialDays = 30, initialFunnel = '' }
   const maxDaily = data ? Math.max(1, ...data.daily.map((d) => d.sessions)) : 1;
 
   return (
-    <div className="flex flex-col h-full">
-      <PageHeader title="Funnel performance">
+    <div className="flex flex-col">
+      {/* Sits inside the analytics page's "Sales page performance" section, so it flows with the page instead of scrolling on its own. */}
+      <div className="px-6 pb-4 flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-lg font-semibold text-white">Funnel performance</h3>
         <div className="flex items-center gap-3 flex-wrap justify-end">
           {(data?.funnels?.length ?? 0) > 1 && (
             <select
@@ -115,12 +121,12 @@ export default function FunnelAnalytics({ initialDays = 30, initialFunnel = '' }
           ))}
           </div>
         </div>
-      </PageHeader>
+      </div>
 
       {error ? <p role="alert" className="p-6">{error} <button onClick={() => load()}>Retry</button></p> : loading || !data ? (
         <Loading />
       ) : (
-        <div className="flex-1 overflow-y-auto px-12 pb-12">
+        <div className="px-6 pb-6">
           <p className="text-xs text-minimal-muted mb-6">
             {data.funnel}
             {(() => {

@@ -1,5 +1,6 @@
 'use client';
 
+import { EmailTabs } from '@/components/crm/email-tabs';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -111,12 +112,13 @@ export default function WorkflowsPage() {
   return (
     <div className="flex flex-col h-full">
       {toastNode}
-      <PageHeader title="Email · Workflows">
+      <PageHeader title="Email">
         <GhostBtn onClick={createBlank} disabled={creating}>
           {creating ? 'Creating…' : 'New blank'}
         </GhostBtn>
         <PrimaryBtn onClick={() => setShowAi(true)}>✦ Draft with AI</PrimaryBtn>
       </PageHeader>
+      <EmailTabs />
 
       <div className="flex-1 overflow-y-auto px-12 pb-12">
         {workflows === null ? (
@@ -261,7 +263,7 @@ function AiComposerModal({
               </Select>
             </Field>
             <Field label="Anchor offer (slug)" hint="Optional">
-              <TextInput value={offerSlug} onChange={(e) => setOfferSlug(e.target.value)} placeholder="e.g. brave-systems" />
+              <TextInput value={offerSlug} onChange={(e) => setOfferSlug(e.target.value)} placeholder="e.g. my-offer" />
             </Field>
             <Field label="Trigger">
               <Select value={trigger} onChange={(e) => setTrigger(e.target.value)}>

@@ -10,17 +10,16 @@
  * the analysis compares against, shown separately as "filled in".
  */
 import { useCallback, useState } from 'react';
-import Link from 'next/link';
 import { useSoloDoc } from '@/components/brand/use-solo-doc';
-import { Bar, EMPTY_STATE, LoadState, Panel, Ring, SaveStatus, Section, TextArea, orNull } from '@/components/brand/ui';
+import { Bar, LoadState, Panel, Ring, SaveStatus, Section, TextArea, orNull } from '@/components/brand/ui';
 import {
-  ANALYSIS_KEY, DIMENSIONS, NO_ANALYSIS_LINE, NO_CONTENT_LINE, REPUTATION_DOC_KEY, buildCompletion, dimensionScore,
-  isReputationEmpty, maturityStage, normalizeContentAnalysis, normalizeReputationDoc, overallScore,
+  ANALYSIS_KEY, DIMENSIONS, NO_ANALYSIS_LINE, REPUTATION_DOC_KEY, buildCompletion, dimensionScore,
+  maturityStage, normalizeContentAnalysis, normalizeReputationDoc, overallScore,
   type ContentAnalysis, type DimensionId, type ReputationDoc,
 } from './types';
 import { AuthorityPanel, ConnectionPanel, PovPanel, ValuePanel } from './panels';
 
-const FRAMING = 'Claude reads what you have actually published and scores how well each part of your brand comes across in it. What you fill in below is your source material: the target, not the score.';
+const FRAMING = 'Claude reads what you have actually published and scores how well each part of your brand comes across in it.';
 
 export type UpdateRep = (fn: (d: ReputationDoc) => ReputationDoc) => void;
 
@@ -32,7 +31,7 @@ function formatDate(iso: string): string {
 /** Last run, piece count and the empty-state line. */
 function analysisStatus(a: ContentAnalysis | null): string {
   if (!a) return NO_ANALYSIS_LINE;
-  if (a.pieces_count === 0) return NO_CONTENT_LINE;
+  if (a.pieces_count === 0) return '';
   const when = formatDate(a.analysed_at);
   return `Last analysed${when ? ` ${when}` : ''} · ${a.pieces_count} published ${a.pieces_count === 1 ? 'piece' : 'pieces'}`;
 }
@@ -73,7 +72,7 @@ export function ReputationView() {
   return (
     <div className="stack">
       <div className="bp-topline">
-        {isReputationEmpty(doc) ? <span className="bp-muted">{EMPTY_STATE}</span> : <span />}
+        <span />
         <SaveStatus state={saveState} error={saveError} onRetry={retrySave} />
       </div>
 
@@ -89,9 +88,6 @@ export function ReputationView() {
             </button>
             <span className="bp-faint">{analysisStatus(analysis)}</span>
           </div>
-          {analysis?.pieces_count === 0 && (
-            <span className="bp-faint">Add transcripts and posts in <Link href="/memory" style={{ textDecoration: 'underline' }}>Memory</Link> with the kind set to content.</span>
-          )}
           {analyseError && <span className="bp-faint" role="alert" style={{ color: 'var(--so-red)' }}>{analyseError}</span>}
         </div>
       </section>
@@ -150,7 +146,7 @@ function InPublishedContent({ analysis, dim, color }: { analysis: ContentAnalysi
   const suggestion = hasRun ? analysis.suggestions[key] : '';
   return (
     <Section title="in your published content" sub={hasRun ? analysisStatus(analysis) : undefined}>
-      {!hasRun && <p className="bp-muted">{analysis ? NO_CONTENT_LINE : NO_ANALYSIS_LINE}</p>}
+      {!hasRun && !analysis && <p className="bp-muted">{NO_ANALYSIS_LINE}</p>}
       {hasRun && (
         <>
           {evidence.length === 0
