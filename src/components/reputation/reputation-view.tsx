@@ -11,7 +11,11 @@
  */
 import { useCallback, useState } from 'react';
 import { useSoloDoc } from '@/components/brand/use-solo-doc';
-import { Bar, LoadState, Panel, Ring, SaveStatus, Section, TextArea, orNull } from '@/components/brand/ui';
+import { PrimaryBtn } from '@/components/crm/kit';
+import {
+  BODY, CARD, CARD_BTN, GRID2, META, PAGE, PAGE_INNER, TITLE, WELL, Bar, LoadState, Panel, Ring, SaveStatus, Section,
+  TextArea, TopLine, orNull,
+} from '@/components/brand/ui';
 import {
   ANALYSIS_KEY, DIMENSIONS, NO_ANALYSIS_LINE, REPUTATION_DOC_KEY, buildCompletion, dimensionScore,
   maturityStage, normalizeContentAnalysis, normalizeReputationDoc, overallScore,
@@ -70,63 +74,62 @@ export function ReputationView() {
   const dim = DIMENSIONS.find((d) => d.id === openDim) ?? null;
 
   return (
-    <div className="stack">
-      <div className="bp-topline">
-        <span />
-        <SaveStatus state={saveState} error={saveError} onRetry={retrySave} />
-      </div>
+    <div className={PAGE}>
+      <div className={PAGE_INNER}>
+        <TopLine><SaveStatus state={saveState} error={saveError} onRetry={retrySave} /></TopLine>
 
-      <section className="bp-hero">
-        <Ring value={overall / 100} label={overall} size={104} stroke={8} color="var(--so-green)" />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
-          <span className="so-label" style={{ color: 'var(--so-label)' }}>stage · {stage.label.toLowerCase()}</span>
-          <h2 style={{ margin: 0 }}>How well does your published content carry your brand?</h2>
-          <p className="bp-muted">{FRAMING}</p>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-            <button type="button" className="bp-btn primary" disabled={analysing} onClick={() => void analyse()}>
-              {analysing ? 'Analysing...' : analysis ? 'Analyse again' : 'Analyse my content'}
-            </button>
-            <span className="bp-faint">{analysisStatus(analysis)}</span>
+        <section className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 pb-8 sm:pb-10">
+          <Ring value={overall / 100} label={overall} size={104} stroke={8} color="var(--so-green)" />
+          <div className="flex flex-col gap-2 min-w-0">
+            <p className={META}>Stage · {stage.label}</p>
+            <h2 className="text-xl font-semibold leading-snug text-white">How well does your published content carry your brand?</h2>
+            <p className={BODY}>{FRAMING}</p>
+            <div className="flex gap-3 items-center flex-wrap mt-1">
+              <PrimaryBtn disabled={analysing} onClick={() => void analyse()}>
+                {analysing ? 'Analysing...' : analysis ? 'Analyse again' : 'Analyse my content'}
+              </PrimaryBtn>
+              <span className={META}>{analysisStatus(analysis)}</span>
+            </div>
+            {analyseError && <span className="text-xs text-red-400" role="alert">{analyseError}</span>}
           </div>
-          {analyseError && <span className="bp-faint" role="alert" style={{ color: 'var(--so-red)' }}>{analyseError}</span>}
-        </div>
-      </section>
+        </section>
 
-      <section className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <span className="so-label" style={{ color: 'var(--so-green)' }}>the transformation I want to be known for</span>
-        <TextArea large rows={2}
-          value={doc.transformation_anchor.positioning_statement}
-          placeholder="One powerful sentence that captures the transformation you want to be known for in your industry."
-          onChange={(v) => update((d) => ({ ...d, transformation_anchor: { ...d.transformation_anchor, positioning_statement: orNull(v) } }))} />
-      </section>
+        <section className={`${CARD} flex flex-col gap-4`}>
+          <h2 className={TITLE}>The transformation I want to be known for</h2>
+          <TextArea large rows={2}
+            value={doc.transformation_anchor.positioning_statement}
+            placeholder="One powerful sentence that captures the transformation you want to be known for in your industry."
+            onChange={(v) => update((d) => ({ ...d, transformation_anchor: { ...d.transformation_anchor, positioning_statement: orNull(v) } }))} />
+        </section>
 
-      <div className="bp-grid2">
-        {DIMENSIONS.map((d) => {
-          const score = dimensionScore(doc, d.id);
-          return (
-            <button key={d.id} type="button" className="bp-tile" onClick={() => setOpenDim(d.id)}>
-              <div className="bp-tile-row">
-                <Ring value={score / 100} label={score} size={56} color={d.color} stroke={5} />
-                <div style={{ minWidth: 0 }}>
-                  <div className="so-label" style={{ color: d.color }}>{d.label.toLowerCase()}</div>
-                  <p style={{ marginTop: 4 }}>{d.definition.split('.')[0]}.</p>
+        <div className={GRID2}>
+          {DIMENSIONS.map((d) => {
+            const score = dimensionScore(doc, d.id);
+            return (
+              <button key={d.id} type="button" className={CARD_BTN} onClick={() => setOpenDim(d.id)}>
+                <div className="flex gap-4 items-center">
+                  <Ring value={score / 100} label={score} size={56} color={d.color} stroke={5} />
+                  <div className="min-w-0">
+                    <h3 className={TITLE}>{d.label}</h3>
+                    <p className={`${BODY} mt-1`}>{d.definition.split('.')[0]}.</p>
+                  </div>
                 </div>
-              </div>
-              <Bar value={score / 100} color={d.color} />
-              <div className="bp-meta">
-                <span title="How much of your source material for this is filled in. Not part of the score.">
-                  source material {Math.round(buildCompletion(doc, d.id) * 100)}% filled in
-                </span>
-                <span>open →</span>
-              </div>
-            </button>
-          );
-        })}
+                <Bar value={score / 100} color={d.color} />
+                <div className={`flex justify-between gap-2 flex-wrap ${META}`}>
+                  <span title="How much of your source material for this is filled in. Not part of the score.">
+                    Source material {Math.round(buildCompletion(doc, d.id) * 100)}% filled in
+                  </span>
+                  <span>Open →</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {dim && (
-        <Panel eyebrow="dimension" title={dim.label.toLowerCase()} sub={dim.definition} color={dim.color} onClose={close}
-          aside={<span style={{ fontSize: 22, fontWeight: 600 }}>{dimensionScore(doc, dim.id)}<span className="bp-faint"> / 100</span></span>}>
+        <Panel eyebrow="dimension" title={dim.label} sub={dim.definition} color={dim.color} onClose={close}
+          aside={<span className="text-2xl font-semibold text-white tabular-nums">{dimensionScore(doc, dim.id)}<span className="text-xs font-normal text-zinc-500"> / 100</span></span>}>
           <InPublishedContent analysis={analysis} dim={dim.id} color={dim.color} />
           {dim.id === 'value' && <ValuePanel doc={doc} update={update} color={dim.color} />}
           {dim.id === 'authority' && <AuthorityPanel doc={doc} update={update} />}
@@ -145,30 +148,32 @@ function InPublishedContent({ analysis, dim, color }: { analysis: ContentAnalysi
   const evidence = hasRun ? analysis.evidence[key] : [];
   const suggestion = hasRun ? analysis.suggestions[key] : '';
   return (
-    <Section title="in your published content" sub={hasRun ? analysisStatus(analysis) : undefined}>
-      {!hasRun && !analysis && <p className="bp-muted">{NO_ANALYSIS_LINE}</p>}
-      {hasRun && (
-        <>
-          {evidence.length === 0
-            ? <p className="bp-muted">No clear examples found in what you have published yet.</p>
-            : (
-              <div className="bp-list">
-                {evidence.map((q, i) => (
-                  <blockquote key={i} className="bp-card" style={{ margin: 0, borderLeft: `3px solid ${color}`, fontSize: 14 }}>
-                    &ldquo;{q}&rdquo;
-                  </blockquote>
-                ))}
+    <>
+      <Section title="in your published content" sub={hasRun ? analysisStatus(analysis) : undefined}>
+        {!hasRun && !analysis && <p className={BODY}>{NO_ANALYSIS_LINE}</p>}
+        {hasRun && (
+          <>
+            {evidence.length === 0
+              ? <p className={BODY}>No clear examples found in what you have published yet.</p>
+              : (
+                <div className="flex flex-col gap-2">
+                  {evidence.map((q, i) => (
+                    <blockquote key={i} className={`${WELL} m-0 px-4 py-3 border-l-2 text-[14px] text-zinc-300 leading-relaxed`} style={{ borderLeftColor: color }}>
+                      &ldquo;{q}&rdquo;
+                    </blockquote>
+                  ))}
+                </div>
+              )}
+            {suggestion && (
+              <div className={`${WELL} px-4 py-3 flex flex-col gap-1`}>
+                <span className="text-xs font-medium" style={{ color }}>Next</span>
+                <span className="text-[14px] text-white leading-relaxed">{suggestion}</span>
               </div>
             )}
-          {suggestion && (
-            <div className="bp-card">
-              <span className="so-label" style={{ color }}>next</span>
-              <span style={{ fontSize: 14 }}>{suggestion}</span>
-            </div>
-          )}
-        </>
-      )}
-      <span className="so-label" style={{ color: 'var(--so-label)', marginTop: 8 }}>your source material</span>
-    </Section>
+          </>
+        )}
+      </Section>
+      <h3 className={`${META} mt-4`}>Your source material</h3>
+    </>
   );
 }

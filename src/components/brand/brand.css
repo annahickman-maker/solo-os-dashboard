@@ -1,120 +1,20 @@
 /*
- * Brand area (Playbooks, Reputation, Offer). Solo OS tokens only
- * (src/app/solo-theme.css). Page bodies of Reputation and Offer sit inside
- * .solo (src/components/solo/solo.css); the tab header sits outside it.
+ * Reputation and Offer pages. Layout, type and colour come from the shared
+ * dashboard utilities (src/components/brand/ui.tsx, src/components/crm/kit.tsx,
+ * re-pointed for light and dark in src/app/solo-theme.css). This file only
+ * holds what utilities cannot say.
  */
 
-/* ── page body bits (inside .solo) ──────────────────────────────────────── */
-.solo .bp-banner { border: 1px dashed var(--so-div-2); border-radius: 8px; padding: 14px 16px; font-size: 13px; color: var(--so-muted); }
-.solo .bp-topline { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 20px; }
-.solo .bp-status { font-size: 12px; color: var(--so-faint); }
-.solo .bp-status.err { color: var(--so-red); }
-.solo .bp-status button { color: inherit; text-decoration: underline; margin-left: 6px; }
-.solo .bp-muted { color: var(--so-muted); font-size: 13px; margin: 0; }
-.solo .bp-faint { color: var(--so-faint); font-size: 12px; }
+/* Fields and secondary buttons inside a filled box sit on the panel colour,
+   so they still read as fields in both themes. */
+.bp-well :is(input, textarea, select),
+.bp-well .bp-ghost { background-color: var(--so-panel); }
 
-.solo .bp-hero { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
-.solo .bp-hero h2 { font-size: 18px; font-weight: 600; margin: 4px 0 6px; }
-@media (max-width: 639px) { .solo .bp-hero { grid-template-columns: 1fr; justify-items: start; gap: 12px; } }
-
-.solo .bp-ring { position: relative; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.solo .bp-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
-.solo .bp-ring span { font-weight: 700; font-variant-numeric: tabular-nums; }
-
-.solo .bp-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.solo .bp-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-@media (max-width: 899px) { .solo .bp-grid3 { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 639px) { .solo .bp-grid2, .solo .bp-grid3 { grid-template-columns: 1fr; } }
-
-.solo .bp-tile {
-  display: flex; flex-direction: column; gap: 10px; text-align: left; width: 100%;
-  background: var(--so-panel); border-radius: 8px; padding: 16px 20px; color: var(--so-ink);
-  border: 1px solid transparent; cursor: pointer; font-family: inherit;
-  transition: border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.solo .bp-tile:hover { border-color: var(--so-div-2); }
-.solo .bp-tile .bp-tile-row { display: flex; gap: 14px; align-items: center; }
-.solo .bp-tile p { margin: 0; font-size: 13px; color: var(--so-muted); }
-.solo .bp-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--so-faint); text-transform: uppercase; letter-spacing: 0.08em; flex-wrap: wrap; }
-.solo .bp-bar { height: 4px; border-radius: 999px; background: var(--so-well); overflow: hidden; }
-.solo .bp-bar > div { height: 100%; border-radius: 999px; }
-
-/* Slide-over panel: right sheet on desktop, full screen on a phone. */
-.bp-scrim { position: fixed; inset: 0; z-index: 80; background: var(--so-scrim); display: flex; justify-content: flex-end; }
-.bp-panel {
-  width: min(680px, 100%); height: 100%; overflow-y: auto; background: var(--so-panel);
-  padding: 24px 28px 64px; display: flex; flex-direction: column; gap: 24px;
-  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.18);
-}
-.bp-panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
-.bp-panel-head h2 { font-size: 20px; font-weight: 600; margin: 4px 0; }
-.bp-panel-head p { margin: 0; font-size: 13px; color: var(--so-muted); }
+/* Side panel motion, as the Focus "Set target" panel. */
+.bp-panel-wrap { animation: bp-fade 0.18s ease-out; }
+.bp-panel { animation: bp-slide 0.22s ease-out; }
+@keyframes bp-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bp-slide { from { transform: translateX(40px); } to { transform: translateX(0); } }
 @media (max-width: 639px) {
-  .bp-panel { width: 100%; padding: calc(16px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom)); gap: 20px; }
+  .bp-panel { padding-top: calc(16px + env(safe-area-inset-top)); padding-bottom: calc(48px + env(safe-area-inset-bottom)); }
 }
-
-.bp-section { display: flex; flex-direction: column; gap: 12px; }
-.bp-section-head h3 { font-size: 14px; font-weight: 600; margin: 0; }
-.bp-section-head p { font-size: 13px; color: var(--so-muted); margin: 4px 0 0; }
-
-.bp-field { display: flex; flex-direction: column; gap: 6px; }
-.bp-field > label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--so-label); }
-.bp-field > .hint { font-size: 12px; color: var(--so-faint); }
-.bp-input {
-  width: 100%; background: var(--so-well); color: var(--so-ink); border: 1px solid transparent;
-  border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: inherit; outline: none; line-height: 1.5;
-}
-.bp-input::placeholder { color: var(--so-faint); }
-.bp-input:focus { border-color: var(--so-div-2); }
-textarea.bp-input { resize: vertical; min-height: 64px; }
-select.bp-input { appearance: auto; }
-.bp-input.lg { font-size: 16px; font-weight: 500; }
-
-.bp-list { display: flex; flex-direction: column; gap: 8px; }
-.bp-card { background: var(--so-well); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
-.bp-row { background: var(--so-well); border-radius: 8px; }
-.bp-row-head {
-  display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px;
-  text-align: left; font-family: inherit; font-size: 14px; color: var(--so-ink); cursor: pointer; background: transparent; border: 0;
-}
-.bp-row-head .title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.bp-row-head .caret { color: var(--so-muted); font-size: 16px; }
-.bp-row-body { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 10px; }
-.bp-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-.bp-add {
-  width: 100%; padding: 12px; border: 2px dashed var(--so-div-2); border-radius: 8px; background: transparent;
-  color: var(--so-muted); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center;
-}
-.bp-add:hover { color: var(--so-ink); border-color: var(--so-faint); }
-.bp-btn {
-  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; border: 1px solid transparent;
-  background: var(--so-chip); color: var(--so-t2); font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
-}
-.bp-btn:hover { color: var(--so-ink); }
-.bp-btn.primary { background: var(--so-primary); color: var(--so-primary-ink); }
-.bp-btn.danger { color: var(--so-red); background: color-mix(in srgb, var(--so-red) 10%, transparent); }
-.bp-btn:disabled { opacity: 0.5; cursor: default; }
-.bp-chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; background: var(--so-chip); color: var(--so-chip-ink); font-size: 11px; font-weight: 600; }
-.bp-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-
-.bp-check {
-  display: flex; gap: 12px; align-items: flex-start; width: 100%; text-align: left; padding: 10px 14px;
-  background: var(--so-well); border-radius: 8px; border: 0; cursor: pointer; font-family: inherit; color: var(--so-ink);
-}
-.bp-check .box {
-  width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--so-faint); flex-shrink: 0; margin-top: 1px;
-  display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
-}
-.bp-check.done .box { background: var(--so-green); border-color: var(--so-green); color: #fff; }
-.bp-check .label { font-size: 14px; display: block; }
-.bp-check .hint { font-size: 12px; color: var(--so-faint); display: block; margin-top: 2px; }
-
-.bp-candidates { border: 1px dashed color-mix(in srgb, var(--so-amber) 55%, transparent); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-.bp-stat { background: var(--so-well); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
-.bp-stat .num { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.bp-rate { display: inline-flex; gap: 4px; flex-wrap: wrap; }
-.bp-rate button {
-  width: 30px; height: 30px; border-radius: 8px; border: 0; background: var(--so-chip); color: var(--so-t3);
-  font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
-}
-.bp-rate button.on { background: var(--so-primary); color: var(--so-primary-ink); }

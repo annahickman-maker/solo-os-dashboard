@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { newId } from '@/components/brand/use-solo-doc';
 import {
-  AddButton, Check, DeleteButton, ExpandRow, Field, NumberInput, Panel, Section, TextArea, TextInput, orNull, patchById,
+  ACTIONS, BODY, CANDIDATES, CARD, GHOST_BTN, GRID2, GRID3, INPUT, ITEM, META, PRIMARY_BTN, SELECT, STAT, STAT_NUM, TITLE, WELL,
+  WELL_BTN, AddButton, Check, Chip, DeleteButton, ExpandRow, Field, NumberInput, Panel, Section, TextArea, TextInput, cap,
+  orNull, patchById,
 } from '@/components/brand/ui';
 import type { ReputationWin } from '@/components/reputation/types';
 import {
@@ -25,12 +27,12 @@ export function AvatarsPanel({ doc, update, onClose }: { doc: OfferDoc; update: 
     <Panel eyebrow="section" title="avatars" color={BLUE} onClose={onClose}
       sub="The people you build your offers for. Open an avatar to see and edit their whole profile.">
       <Section title="avatar bank">
-        <div className="bp-list">
+        <div className="flex flex-col gap-2">
           {doc.avatars.map((a) => (
             <ExpandRow key={a.id} open={openId === a.id} onToggle={() => setOpenId(openId === a.id ? null : a.id)}
-              title={<><strong style={{ fontWeight: 600 }}>{a.name || 'unnamed avatar'}</strong>{a.one_line && <span className="bp-faint" style={{ display: 'block', marginTop: 2 }}>{a.one_line.slice(0, 140)}</span>}</>}>
+              title={<><strong className="font-medium">{a.name || 'Unnamed avatar'}</strong>{a.one_line && <span className={`block mt-0.5 ${META}`}>{a.one_line.slice(0, 140)}</span>}</>}>
               <AvatarEditor avatar={a} update={update} />
-              <div className="bp-actions">
+              <div className={ACTIONS}>
                 <DeleteButton what={`"${a.name || 'this avatar'}"`} onDelete={() => update((d) => ({
                   ...d,
                   avatars: d.avatars.filter((x) => x.id !== a.id),
@@ -60,7 +62,7 @@ function AvatarEditor({ avatar, update }: { avatar: OfferAvatar; update: UpdateO
           onChange={(v) => patch({ one_line: orNull(v) })} />
       </Field>
       <Field label="demographics"><TextInput value={avatar.demographics} placeholder="Age, work, where they are, what they earn" onChange={(v) => patch({ demographics: orNull(v) })} /></Field>
-      <div className="bp-grid2">
+      <div className={GRID2}>
         <Field label="before"><TextArea rows={4} value={avatar.before_state} placeholder="The stuck place. The recurring frustration they live in right now." onChange={(v) => patch({ before_state: orNull(v) })} /></Field>
         <Field label="after"><TextArea rows={4} value={avatar.after_state} placeholder="The day-to-day after working with you." onChange={(v) => patch({ after_state: orNull(v) })} /></Field>
       </div>
@@ -76,23 +78,23 @@ function AvatarEditor({ avatar, update }: { avatar: OfferAvatar; update: UpdateO
 function WordsList({ label, items, placeholder, onChange }: { label: string; items: string[]; placeholder: string; onChange: (v: string[]) => void }) {
   const [draft, setDraft] = useState('');
   return (
-    <div className="bp-field">
-      <label>{label}</label>
+    <div className="flex flex-col gap-1.5 min-w-0">
+      <span className="text-[13px] font-medium text-zinc-300">{cap(label)}</span>
       {items.map((item, i) => (
-        <div key={`${i}-${item}`} className="bp-card" style={{ flexDirection: 'row', alignItems: 'flex-start', padding: '8px 12px', background: 'var(--so-chip)' }}>
-          <span style={{ flex: 1, fontSize: 14 }}>&ldquo;{item}&rdquo;</span>
-          <button type="button" className="bp-btn" aria-label="Remove" onClick={() => onChange(items.filter((_, j) => j !== i))}>×</button>
+        <div key={`${i}-${item}`} className={`${WELL} flex items-start gap-3 pl-4 pr-2 py-2`}>
+          <span className="flex-1 min-w-0 py-1.5 text-[14px] text-white">&ldquo;{item}&rdquo;</span>
+          <button type="button" className={GHOST_BTN} aria-label="Remove" onClick={() => onChange(items.filter((_, j) => j !== i))}>×</button>
         </div>
       ))}
-      <form style={{ display: 'flex', gap: 6 }} onSubmit={(e) => {
+      <form className="flex gap-2" onSubmit={(e) => {
         e.preventDefault();
         const v = draft.trim();
         if (!v) return;
         onChange([...items, v]);
         setDraft('');
       }}>
-        <input className="bp-input" value={draft} placeholder={placeholder} aria-label={label} onChange={(e) => setDraft(e.target.value)} />
-        <button type="submit" className="bp-btn" disabled={!draft.trim()}>add</button>
+        <input className={INPUT} value={draft} placeholder={placeholder} aria-label={label} onChange={(e) => setDraft(e.target.value)} />
+        <button type="submit" className={GHOST_BTN} disabled={!draft.trim()}>Add</button>
       </form>
     </div>
   );
@@ -110,37 +112,37 @@ export function SuitePanel({ doc, update, onClose }: { doc: OfferDoc; update: Up
         const rungs = doc.rungs.filter((r) => r.tier === tier).sort((a, b) => a.sort_order - b.sort_order);
         return (
           <Section key={tier} title={TIER_META[tier].label} sub={TIER_META[tier].sub}>
-            <div className="bp-list">
+            <div className="flex flex-col gap-2">
               {rungs.map((r) => (
                 <ExpandRow key={r.id} open={openId === r.id} onToggle={() => setOpenId(openId === r.id ? null : r.id)}
-                  title={<>{r.price_label && <strong style={{ fontWeight: 600, marginRight: 8 }}>{r.price_label}</strong>}{r.name || <span className="bp-faint">untitled offer</span>}</>}
-                  badge={<span className="bp-chip">{STAGE_META[r.status].label.toLowerCase()}</span>}>
-                  <div className="bp-grid2">
+                  title={<>{r.price_label && <strong className="font-medium mr-2">{r.price_label}</strong>}{r.name || <span className="text-zinc-500">Untitled offer</span>}</>}
+                  badge={<Chip>{STAGE_META[r.status].label.toLowerCase()}</Chip>}>
+                  <div className={GRID2}>
                     <Field label="name"><TextInput value={r.name} placeholder="e.g. Starter course" onChange={(v) => patch(r.id, { name: v })} /></Field>
                     <Field label="price"><TextInput value={r.price_label} placeholder="e.g. $47/mo" onChange={(v) => patch(r.id, { price_label: v })} /></Field>
                   </div>
                   <Field label="what it is"><TextArea rows={3} value={r.proof_required} placeholder="What is being sold at this tier, in one paragraph." onChange={(v) => patch(r.id, { proof_required: orNull(v) })} /></Field>
                   <Field label="the promise"><TextArea rows={2} value={r.promise} placeholder="The specific outcome, and by when." onChange={(v) => patch(r.id, { promise: v })} /></Field>
-                  <div className="bp-grid3">
+                  <div className={GRID3}>
                     <Field label="stage">
-                      <select className="bp-input" value={r.status} onChange={(e) => patch(r.id, { status: e.target.value as OfferPricingRung['status'] })}>
+                      <select className={INPUT} value={r.status} onChange={(e) => patch(r.id, { status: e.target.value as OfferPricingRung['status'] })}>
                         {OFFER_STAGES.map((s) => <option key={s} value={s}>{STAGE_META[s].label}</option>)}
                       </select>
                     </Field>
                     <Field label="tier">
-                      <select className="bp-input" value={r.tier} onChange={(e) => patch(r.id, { tier: e.target.value as OfferPricingRung['tier'] })}>
+                      <select className={INPUT} value={r.tier} onChange={(e) => patch(r.id, { tier: e.target.value as OfferPricingRung['tier'] })}>
                         {OFFER_TIERS.map((t) => <option key={t} value={t}>{TIER_META[t].label}</option>)}
                       </select>
                     </Field>
                     <Field label="avatar">
-                      <select className="bp-input" value={r.avatar_id ?? ''} onChange={(e) => patch(r.id, { avatar_id: e.target.value || null })}>
+                      <select className={INPUT} value={r.avatar_id ?? ''} onChange={(e) => patch(r.id, { avatar_id: e.target.value || null })}>
                         <option value="">none</option>
-                        {doc.avatars.map((a) => <option key={a.id} value={a.id}>{a.name || 'unnamed avatar'}</option>)}
+                        {doc.avatars.map((a) => <option key={a.id} value={a.id}>{a.name || 'Unnamed avatar'}</option>)}
                       </select>
                     </Field>
                   </div>
-                  <span className="bp-faint">{STAGE_META[r.status].description}</span>
-                  <div className="bp-actions">
+                  <span className={META}>{STAGE_META[r.status].description}</span>
+                  <div className={ACTIONS}>
                     <DeleteButton what="this offer" onDelete={() => update((d) => ({ ...d, rungs: d.rungs.filter((x) => x.id !== r.id), emails: d.emails.filter((e) => e.rung_id !== r.id) }))} />
                   </div>
                 </ExpandRow>
@@ -174,36 +176,36 @@ function ResultsBank({ results, update }: { results: OfferPricingResult[]; updat
   const confirmed = results.filter((r) => r.status === 'confirmed');
   const candidates = results.filter((r) => r.status === 'candidate');
   return (
-    <div className="bp-list">
+    <div className="flex flex-col gap-2">
       {confirmed.map((r) => (
         <ExpandRow key={r.id} open={openId === r.id} onToggle={() => setOpenId(openId === r.id ? null : r.id)}
-          title={r.title || <span className="bp-faint">untitled result</span>}
-          badge={<span className="bp-chip">{r.metric || (r.kind === 'own' ? 'mine' : 'customer')}</span>}>
+          title={r.title || <span className="text-zinc-500">Untitled result</span>}
+          badge={<Chip>{r.metric || (r.kind === 'own' ? 'mine' : 'customer')}</Chip>}>
           <TextInput value={r.title} placeholder="e.g. Client doubled her rates in 60 days" onChange={(v) => patch(r.id, { title: v })} />
           <TextArea rows={3} value={r.body} placeholder="Specifics: who, what changed, timeline." onChange={(v) => patch(r.id, { body: orNull(v) })} />
-          <div className="bp-grid2">
-            <select className="bp-input" value={r.kind} aria-label="Whose result" onChange={(e) => patch(r.id, { kind: e.target.value as OfferPricingResult['kind'] })}>
+          <div className={GRID2}>
+            <select className={INPUT} value={r.kind} aria-label="Whose result" onChange={(e) => patch(r.id, { kind: e.target.value as OfferPricingResult['kind'] })}>
               <option value="own">my result</option>
               <option value="customer">customer result</option>
             </select>
             <TextInput value={r.metric} placeholder="Metric, e.g. +$4K/mo" onChange={(v) => patch(r.id, { metric: orNull(v) })} />
           </div>
-          <div className="bp-actions">
-            <button type="button" className="bp-btn" onClick={() => patch(r.id, { status: 'rejected' })}>hide</button>
+          <div className={ACTIONS}>
+            <button type="button" className={GHOST_BTN} onClick={() => patch(r.id, { status: 'rejected' })}>Hide</button>
             <DeleteButton what="this result" onDelete={() => remove(r.id)} />
           </div>
         </ExpandRow>
       ))}
       {candidates.length > 0 && (
-        <div className="bp-candidates">
-          <span className="so-label" style={{ color: 'var(--so-amber)' }}>suggested · {candidates.length} to review</span>
+        <div className={CANDIDATES}>
+          <span className="text-xs font-medium text-amber-500">Suggested · {candidates.length} to review</span>
           {candidates.map((r) => (
-            <div key={r.id} className="bp-card">
-              <strong style={{ fontSize: 14 }}>{r.title}</strong>
-              {r.body && <p className="bp-muted">{r.body}</p>}
-              <div className="bp-actions">
-                <button type="button" className="bp-btn" onClick={() => patch(r.id, { status: 'rejected' })}>reject</button>
-                <button type="button" className="bp-btn primary" onClick={() => patch(r.id, { status: 'confirmed' })}>keep</button>
+            <div key={r.id} className={ITEM}>
+              <strong className="text-[14px] font-medium text-white">{r.title}</strong>
+              {r.body && <p className={BODY}>{r.body}</p>}
+              <div className={ACTIONS}>
+                <button type="button" className={GHOST_BTN} onClick={() => patch(r.id, { status: 'rejected' })}>Reject</button>
+                <button type="button" className={PRIMARY_BTN} onClick={() => patch(r.id, { status: 'confirmed' })}>Keep</button>
               </div>
             </div>
           ))}
@@ -231,20 +233,19 @@ export function OfferAvatarPanel({ rung, doc, update, save, onClose }: {
       title={attached ? `linked: ${attached.name ?? 'unnamed'}` : 'pick an avatar to attach'}
       sub="Every offer talks to one specific person. Pick one below; the linked avatar's profile opens underneath for editing.">
       {doc.avatars.length === 0 ? (
-        <p className="bp-muted">No avatars yet. Add one in the Avatars card at the top of the Offer tab.</p>
+        <p className={BODY}>No avatars yet. Add one in the Avatars card at the top of the Offer tab.</p>
       ) : (
-        <div className="bp-grid2">
+        <div className={GRID2}>
           {doc.avatars.map((a) => {
             const on = a.id === rung.avatar_id;
             return (
-              <button key={a.id} type="button" className="bp-tile" aria-pressed={on}
-                onClick={() => save({ avatar_id: on ? null : a.id })}
-                style={{ background: 'var(--so-well)', boxShadow: on ? 'inset 0 0 0 1px var(--so-blue)' : undefined }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                  <strong style={{ fontSize: 14 }}>{a.name || 'unnamed avatar'}</strong>
-                  {on && <span className="bp-chip" style={{ color: BLUE }}>✓ linked</span>}
+              <button key={a.id} type="button" className={`${WELL_BTN}${on ? ' ring-1 ring-blue-500 hover:ring-blue-500' : ''}`} aria-pressed={on}
+                onClick={() => save({ avatar_id: on ? null : a.id })}>
+                <div className="flex justify-between gap-2">
+                  <strong className="text-[14px] font-medium text-white">{a.name || 'Unnamed avatar'}</strong>
+                  {on && <Chip color={BLUE}>✓ linked</Chip>}
                 </div>
-                <p>{(a.one_line || a.before_state || 'Not filled in yet.').slice(0, 180)}</p>
+                <p className={BODY}>{(a.one_line || a.before_state || 'Not filled in yet.').slice(0, 180)}</p>
               </button>
             );
           })}
@@ -253,7 +254,7 @@ export function OfferAvatarPanel({ rung, doc, update, save, onClose }: {
       {attached && (
         <Section title="profile">
           <AvatarEditor avatar={attached} update={update} />
-          <div className="bp-actions"><button type="button" className="bp-btn" onClick={() => save({ avatar_id: null })}>detach this avatar from this offer</button></div>
+          <div className={ACTIONS}><button type="button" className={GHOST_BTN} onClick={() => save({ avatar_id: null })}>Detach this avatar from this offer</button></div>
         </Section>
       )}
     </Panel>
@@ -277,13 +278,13 @@ export function OfferPricingPanel({ rung, save, onClose }: { rung: OfferPricingR
       <Field label="goal price" hint="Where you want this offer to land at scale.">
         <TextInput value={rung.goal_price_label} placeholder="$197/mo" onChange={(v) => withDerived({ goal_price_label: v })} />
       </Field>
-      <div className="bp-grid2">
+      <div className={GRID2}>
         <Field label="target monthly revenue (USD)" hint="How much this offer is meant to bring in.">
           <NumberInput value={rung.target_revenue_per_month_usd} placeholder="5000" onChange={(v) => withDerived({ target_revenue_per_month_usd: v })} />
         </Field>
         <Field label="target customers / month"
           hint={derived !== null ? 'Target revenue divided by the goal price (or the current price).' : 'Fill in target revenue and a price and this works itself out.'}>
-          <div className="bp-stat" style={{ alignItems: 'center' }}><span className="num">{derived !== null ? derived.toLocaleString() : (rung.target_customers_per_month ?? '-')}</span></div>
+          <div className={STAT}><span className={STAT_NUM}>{derived !== null ? derived.toLocaleString() : (rung.target_customers_per_month ?? '-')}</span></div>
         </Field>
       </div>
       <Field label="plan to raise the price" hint="What triggers each step up: number of customers, level of proof, something added?">
@@ -311,8 +312,8 @@ export function OfferProofPanel({ rung, doc, wins, save, onClose }: {
       </Section>
       <Section title={`pinned proof · ${items.filter((i) => pinned.has(i.id)).length}`}
         sub="From the results in your Offer Suite and the wins on your Reputation tab.">
-        {items.length === 0 && <p className="bp-muted">No results or wins yet. Add results in the Offer Suite card, or wins under Authority on the Reputation tab.</p>}
-        <div className="bp-list">
+        {items.length === 0 && <p className={BODY}>No results or wins yet. Add results in the Offer Suite card, or wins under Authority on the Reputation tab.</p>}
+        <div className="flex flex-col gap-2">
           {items.map((i) => (
             <Check key={i.id} done={pinned.has(i.id)} onToggle={() => toggle(i.id)}
               label={i.title} hint={[i.kind, i.body].filter(Boolean).join(' · ')} />
@@ -334,13 +335,15 @@ export function OfferValidationPanel({ rung, save, onClose }: { rung: OfferPrici
         const count = p.checks.filter((c) => done.has(c.id)).length;
         const isCurrent = p.id === current;
         return (
-          <section key={p.id} className="bp-card" style={{ background: 'transparent', padding: 0, boxShadow: isCurrent ? '-3px 0 0 0 var(--so-blue)' : undefined, paddingLeft: isCurrent ? 12 : 0 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>{p.label}{isCurrent && <span className="bp-chip" style={{ marginLeft: 8, color: BLUE }}>you are here</span>}</h3>
-              <span className="bp-faint">{count} / {p.checks.length}</span>
+          <section key={p.id} className={`${CARD} flex flex-col gap-4${isCurrent ? ' ring-1 ring-blue-500' : ''}`}>
+            <div>
+              <div className="flex justify-between gap-2 items-baseline">
+                <h3 className={`${TITLE} inline-flex items-center gap-2 flex-wrap`}>{p.label}{isCurrent && <Chip color={BLUE}>you are here</Chip>}</h3>
+                <span className={`${META} tabular-nums`}>{count} / {p.checks.length}</span>
+              </div>
+              <p className={`${BODY} mt-1`}>{p.description}</p>
             </div>
-            <p className="bp-muted">{p.description}</p>
-            <div className="bp-list">
+            <div className="flex flex-col gap-2">
               {p.checks.map((c) => <Check key={c.id} label={c.label} hint={c.hint} done={done.has(c.id)} onToggle={() => toggle(c.id)} />)}
             </div>
           </section>
@@ -365,48 +368,48 @@ export function OfferContentPanel({ rung, doc, update, save, onClose }: {
       sub="The sales page is the destination. Your video sales letter and emails send people to it. Numbers are the last 30 days, typed in from wherever you track them.">
       <Section title="sales page" sub="Conversion = buyers ÷ visitors.">
         <TextInput type="url" value={rung.sales_page_url} placeholder="https://..." ariaLabel="Sales page link" onChange={(v) => save({ sales_page_url: v })} />
-        <div className="bp-grid3">
+        <div className={GRID3}>
           <Field label="visitors"><NumberInput value={rung.sales_page_visitors_30d} placeholder="0" onChange={(v) => save({ sales_page_visitors_30d: v })} /></Field>
           <Field label="buyers"><NumberInput value={rung.sales_page_buyers_30d} placeholder="0" onChange={(v) => save({ sales_page_buyers_30d: v })} /></Field>
-          <div className="bp-stat"><span className="so-label" style={{ color: 'var(--so-label)' }}>conversion</span><span className="num">{pct(rate(rung.sales_page_buyers_30d, rung.sales_page_visitors_30d))}</span></div>
+          <div className={STAT}><span className={META}>Conversion</span><span className={STAT_NUM}>{pct(rate(rung.sales_page_buyers_30d, rung.sales_page_visitors_30d))}</span></div>
         </div>
       </Section>
       <Section title="video sales letter" sub="The long-form video that does the selling. Click-through = link clicks ÷ views.">
         <TextInput type="url" value={rung.vsl_url} placeholder="https://..." ariaLabel="Video sales letter link" onChange={(v) => save({ vsl_url: v })} />
-        <div className="bp-grid3">
+        <div className={GRID3}>
           <Field label="views"><NumberInput value={rung.vsl_views_30d} placeholder="0" onChange={(v) => save({ vsl_views_30d: v })} /></Field>
           <Field label="link clicks"><NumberInput value={rung.vsl_link_clicks_30d} placeholder="0" onChange={(v) => save({ vsl_link_clicks_30d: v })} /></Field>
-          <div className="bp-stat"><span className="so-label" style={{ color: 'var(--so-label)' }}>click-through</span><span className="num">{pct(rate(rung.vsl_link_clicks_30d, rung.vsl_views_30d))}</span></div>
+          <div className={STAT}><span className={META}>Click-through</span><span className={STAT_NUM}>{pct(rate(rung.vsl_link_clicks_30d, rung.vsl_views_30d))}</span></div>
         </div>
       </Section>
       <Section title="emails" sub={`Emails that send people to this offer. Type each one's conversion rate from your email platform. Average: ${pct(avg)}.`}>
-        <div className="bp-list">
+        <div className="flex flex-col gap-2">
           {emails.map((e) => (
-            <div key={e.id} className="bp-card">
+            <div key={e.id} className={ITEM}>
               <TextInput value={e.subject} placeholder="Subject" onChange={(v) => patchEmail(e.id, { subject: v })} />
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                <select className="bp-input" style={{ width: 'auto' }} value={e.kind} aria-label="Email type" onChange={(ev) => patchEmail(e.id, { kind: ev.target.value as OfferEmailKind })}>
+              <div className="flex gap-2 flex-wrap items-center">
+                <select className={SELECT} value={e.kind} aria-label="Email type" onChange={(ev) => patchEmail(e.id, { kind: ev.target.value as OfferEmailKind })}>
                   {OFFER_EMAIL_KINDS.map((k) => <option key={k} value={k}>{EMAIL_KIND_LABEL[k]}</option>)}
                 </select>
-                <div style={{ width: 120 }}><NumberInput value={e.conversion_rate_pct} placeholder="% conv." ariaLabel="Conversion rate, percent" onChange={(v) => patchEmail(e.id, { conversion_rate_pct: v })} /></div>
-                <span style={{ flex: 1 }} />
+                <div className="w-32"><NumberInput value={e.conversion_rate_pct} placeholder="% conv." ariaLabel="Conversion rate, percent" onChange={(v) => patchEmail(e.id, { conversion_rate_pct: v })} /></div>
+                <span className="flex-1" />
                 <DeleteButton what="this email" onDelete={() => update((d) => ({ ...d, emails: d.emails.filter((x) => x.id !== e.id) }))} />
               </div>
             </div>
           ))}
-          <form className="bp-card" onSubmit={(ev) => {
+          <form className={ITEM} onSubmit={(ev) => {
             ev.preventDefault();
             if (!subject.trim()) return;
             const now = Date.now();
             update((d) => ({ ...d, emails: [...d.emails, { id: newId('email'), rung_id: rung.id, subject: subject.trim(), kind, conversion_rate_pct: null, created_at: now, updated_at: now }] }));
             setSubject('');
           }}>
-            <input className="bp-input" value={subject} placeholder="Email subject, e.g. 'Last 24 hours: doors close tonight'" aria-label="New email subject" onChange={(ev) => setSubject(ev.target.value)} />
-            <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-              <select className="bp-input" style={{ width: 'auto' }} value={kind} aria-label="New email type" onChange={(ev) => setKind(ev.target.value as OfferEmailKind)}>
+            <input className={INPUT} value={subject} placeholder="Email subject, e.g. 'Last 24 hours: doors close tonight'" aria-label="New email subject" onChange={(ev) => setSubject(ev.target.value)} />
+            <div className="flex gap-2 justify-end flex-wrap">
+              <select className={SELECT} value={kind} aria-label="New email type" onChange={(ev) => setKind(ev.target.value as OfferEmailKind)}>
                 {OFFER_EMAIL_KINDS.map((k) => <option key={k} value={k}>{EMAIL_KIND_LABEL[k]}</option>)}
               </select>
-              <button type="submit" className="bp-btn primary" disabled={!subject.trim()}>add email</button>
+              <button type="submit" className={PRIMARY_BTN} disabled={!subject.trim()}>Add email</button>
             </div>
           </form>
         </div>
@@ -427,13 +430,15 @@ export function OfferScorePanel({ rung, save, onClose }: { rung: OfferPricingRun
       sub={`Rate each statement 1 (not at all) to 5 (fully). Sections are weighted for the ${STAGE_META[rung.status].label.toLowerCase()} stage. Tap a rating again to clear it.`}>
       {QUIZ_SECTIONS.map((s) => (
         <Section key={s} title={`${QUIZ_LABEL[s]} · ${Math.round(perSection[s] * 100)}`}>
-          <div className="bp-list">
+          <div className="flex flex-col gap-2">
             {OFFER_QUIZ[s].map((q, i) => (
-              <div key={q} className="bp-card" style={{ gap: 8 }}>
-                <span style={{ fontSize: 14 }}>{q}</span>
-                <div className="bp-rate" role="group" aria-label={q}>
+              <div key={q} className={`${WELL} px-4 py-3 flex flex-col gap-2`}>
+                <span className="text-[14px] text-white">{q}</span>
+                <div className="inline-flex gap-1 flex-wrap" role="group" aria-label={q}>
                   {[1, 2, 3, 4, 5].map((n) => (
-                    <button key={n} type="button" className={rung.scores[s][i] === n ? 'on' : ''} aria-pressed={rung.scores[s][i] === n}
+                    <button key={n} type="button" aria-pressed={rung.scores[s][i] === n}
+                      className={`w-8 h-8 rounded-lg text-[13px] font-semibold tabular-nums transition-colors ${
+                        rung.scores[s][i] === n ? 'bg-white text-black' : 'bg-minimal-bg text-zinc-400 hover:text-white'}`}
                       onClick={() => setScore(s, i, n)}>{n}</button>
                   ))}
                 </div>

@@ -372,7 +372,7 @@ export function maturityStage(overall: number): { id: string; label: string; des
   if (overall >= 60) return { id: 'resonating', label: 'Resonating', description: 'All four ingredients present. People say it feels written for them.' };
   if (overall >= 40) return { id: 'building', label: 'Building', description: 'A real body of work. Some ingredients consistently strong.' };
   if (overall >= 20) return { id: 'validating', label: 'Validating', description: 'One transformation chosen, content starting to ladder to it.' };
-  return { id: 'scattered', label: 'Scattered', description: 'Not enough yet to compound. Build the foundations first.' };
+  return { id: 'invisible', label: 'Invisible', description: 'Not enough yet to compound. Build the foundations first.' };
 }
 
 /** The 30-second version drafted from the long story: first sentences, up to 280 characters. */

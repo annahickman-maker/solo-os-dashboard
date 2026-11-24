@@ -5,7 +5,7 @@ export const metadata = { title: 'Reputation' };
 
 export default function BrandReputationPage() {
   return (
-    <div className="solo flex-1 min-h-0">
+    <div className="flex-1 min-h-0 flex flex-col">
       <ReputationView />
     </div>
   );

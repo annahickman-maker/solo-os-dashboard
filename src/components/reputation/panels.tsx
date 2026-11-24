@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { newId } from '@/components/brand/use-solo-doc';
 import {
-  AddButton, Check, DeleteButton, ExpandRow, Field, NumberInput, Section, Tags, TagsInput, TextArea, TextInput,
+  ACTIONS, BODY, CANDIDATES, GHOST_BTN, GRID2, INPUT, ITEM, META, PRIMARY_BTN, STAT, STAT_NUM,
+  AddButton, Check, Chip, DeleteButton, ExpandRow, Field, NumberInput, Section, Tags, TagsInput, TextArea, TextInput,
   orNull, patchById,
 } from '@/components/brand/ui';
 import {
@@ -45,16 +46,16 @@ export function ValuePanel({ doc, update, color }: Props & { color: string }) {
       </Section>
 
       <Section title="hours of content" sub="A running total of the long-form content you have published. The more you ship, the more your team has to draw on when writing in your voice.">
-        <div className="bp-grid2">
-          <div className="bp-stat">
-            <span className="so-label" style={{ color: 'var(--so-label)' }}>hours published</span>
+        <div className={GRID2}>
+          <div className={STAT}>
+            <span className={META}>Hours published</span>
             <NumberInput value={doc.slots.hours_on_transformation} placeholder="0" ariaLabel="Hours of long-form content published"
               onChange={(v) => setSlot(update, 'hours_on_transformation', v)} />
           </div>
-          <div className="bp-stat">
-            <span className="so-label" style={{ color: 'var(--so-label)' }}>transformation series</span>
-            <span className="num">{filledSteps} / 5</span>
-            <span className="bp-faint">one cornerstone piece per step</span>
+          <div className={STAT}>
+            <span className={META}>Transformation series</span>
+            <span className={STAT_NUM}>{filledSteps} / 5</span>
+            <span className={META}>One cornerstone piece per step</span>
           </div>
         </div>
       </Section>
@@ -97,25 +98,25 @@ function WinsList({ wins, kind, setWins }: {
   const patch = (id: string, p: Partial<ReputationWin>) => setWins((all) => patchById(all, id, p));
 
   return (
-    <div className="bp-list">
+    <div className="flex flex-col gap-2">
       {confirmed.map((w) => (
-        <ExpandRow key={w.id} title={w.title || <span className="bp-faint">untitled</span>} open={openId === w.id}
+        <ExpandRow key={w.id} title={w.title || <span className="text-zinc-500">Untitled</span>} open={openId === w.id}
           onToggle={() => setOpenId(openId === w.id ? null : w.id)}>
           <TextInput value={w.title} placeholder={kind === 'own' ? "Headline, e.g. '$50K month from a 5-video series'" : "Client headline, e.g. 'Client A: 0 to 2K subscribers in 90 days'"}
             onChange={(v) => patch(w.id, { title: v })} />
           <TextArea rows={3} value={w.body} placeholder="Specifics: numbers, dates, what was done."
             onChange={(v) => patch(w.id, { body: orNull(v) })} />
           {kind !== 'own' && (
-            <select className="bp-input" value={w.kind} aria-label="Who this win is for"
+            <select className={INPUT} value={w.kind} aria-label="Who this win is for"
               onChange={(e) => patch(w.id, { kind: e.target.value as ReputationWin['kind'] })}>
               <option value="client">client</option>
               <option value="student">student</option>
             </select>
           )}
           <TagsInput value={w.tags} onChange={(tags) => patch(w.id, { tags })} />
-          {w.source_episode && <span className="bp-faint">from: {w.source_episode}</span>}
-          <div className="bp-actions">
-            <button type="button" className="bp-btn" onClick={() => patch(w.id, { status: 'rejected' })}>hide</button>
+          {w.source_episode && <span className={META}>From: {w.source_episode}</span>}
+          <div className={ACTIONS}>
+            <button type="button" className={GHOST_BTN} onClick={() => patch(w.id, { status: 'rejected' })}>Hide</button>
             <DeleteButton what={`"${w.title || 'this win'}"`} onDelete={() => setWins((all) => all.filter((x) => x.id !== w.id))} />
           </div>
         </ExpandRow>
@@ -136,9 +137,9 @@ function WinsList({ wins, kind, setWins }: {
         setOpenId(id);
       }} />
       {hidden > 0 && (
-        <button type="button" className="bp-btn" style={{ alignSelf: 'flex-start' }}
+        <button type="button" className={`${GHOST_BTN} self-start`}
           onClick={() => setWins((all) => all.map((w) => (w.status === 'rejected' && (kind === 'own') === (w.kind === 'own') ? { ...w, status: 'confirmed' } : w)))}>
-          show {hidden} hidden
+          Show {hidden} hidden
         </button>
       )}
     </div>
@@ -147,8 +148,8 @@ function WinsList({ wins, kind, setWins }: {
 
 function Candidates({ count, children }: { count: number; children: React.ReactNode }) {
   return (
-    <div className="bp-candidates">
-      <span className="so-label" style={{ color: 'var(--so-amber)' }}>suggested · {count} to review</span>
+    <div className={CANDIDATES}>
+      <span className="text-xs font-medium text-amber-500">Suggested · {count} to review</span>
       {children}
     </div>
   );
@@ -158,13 +159,13 @@ function CandidateRow({ title, body, source, onKeep, onReject }: {
   title?: string | null; body?: string | null; source?: string | null; onKeep: () => void; onReject: () => void;
 }) {
   return (
-    <div className="bp-card">
-      {title && <strong style={{ fontSize: 14 }}>{title}</strong>}
-      {body && <p className="bp-muted" style={{ whiteSpace: 'pre-wrap' }}>{body}</p>}
-      {source && <span className="bp-faint">from: {source}</span>}
-      <div className="bp-actions">
-        <button type="button" className="bp-btn" onClick={onReject}>reject</button>
-        <button type="button" className="bp-btn primary" onClick={onKeep}>keep</button>
+    <div className={ITEM}>
+      {title && <strong className="text-[14px] font-medium text-white">{title}</strong>}
+      {body && <p className={`${BODY} whitespace-pre-wrap`}>{body}</p>}
+      {source && <span className={META}>From: {source}</span>}
+      <div className={ACTIONS}>
+        <button type="button" className={GHOST_BTN} onClick={onReject}>Reject</button>
+        <button type="button" className={PRIMARY_BTN} onClick={onKeep}>Keep</button>
       </div>
     </div>
   );
@@ -180,20 +181,20 @@ function BankSection({ title, sub, entries, onChange, color }: {
   const patch = (id: string, p: Partial<ApprovedBankEntry>) => onChange((all) => patchById(all, id, p));
   return (
     <Section title={title} sub={sub}>
-      <div className="bp-list">
+      <div className="flex flex-col gap-2">
         {entries.map((e) => (
           <ExpandRow key={e.id} open={openId === e.id} onToggle={() => setOpenId(openId === e.id ? null : e.id)}
-            title={e.title || (e.text ? `"${e.text.slice(0, 90)}${e.text.length > 90 ? '...' : ''}"` : <span className="bp-faint">untitled</span>)}
-            badge={e.tags?.length ? <span className="bp-chip" style={{ color }}>{e.tags[0]}</span> : undefined}>
+            title={e.title || (e.text ? `"${e.text.slice(0, 90)}${e.text.length > 90 ? '...' : ''}"` : <span className="text-zinc-500">Untitled</span>)}
+            badge={e.tags?.length ? <Chip color={color}>{e.tags[0]}</Chip> : undefined}>
             <TextInput value={e.title} placeholder="Short title (optional)" onChange={(v) => patch(e.id, { title: orNull(v) })} />
             <TextArea rows={4} value={e.text} placeholder="The words, verbatim." onChange={(v) => patch(e.id, { text: v })} />
             <TextArea rows={2} value={e.context} placeholder="Context: where and why it came up (optional)" onChange={(v) => patch(e.id, { context: orNull(v) })} />
-            <div className="bp-grid2">
+            <div className={GRID2}>
               <TextInput value={e.source_transcript} placeholder="Source (call, video, post)" onChange={(v) => patch(e.id, { source_transcript: orNull(v) })} />
               <TextInput value={e.source_timestamp} placeholder="Timestamp, e.g. 12:40" onChange={(v) => patch(e.id, { source_timestamp: orNull(v) })} />
             </div>
             <TagsInput value={e.tags} onChange={(tags) => patch(e.id, { tags })} />
-            <div className="bp-actions">
+            <div className={ACTIONS}>
               <DeleteButton what="this entry" onDelete={() => onChange((all) => all.filter((x) => x.id !== e.id))} />
             </div>
           </ExpandRow>
@@ -222,17 +223,17 @@ export function PovPanel({ doc, update }: Props) {
       </Section>
 
       <Section title="POV bank" sub="Every contrarian point you stake, structured. Open a POV to fill in the common belief, your flip, why you believe it, and how you use it in content.">
-        <div className="bp-list">
+        <div className="flex flex-col gap-2">
           {doc.povs.map((p) => (
-            <ExpandRow key={p.id} title={p.title || <span className="bp-faint">untitled POV</span>} open={openId === p.id}
+            <ExpandRow key={p.id} title={p.title || <span className="text-zinc-500">Untitled POV</span>} open={openId === p.id}
               onToggle={() => setOpenId(openId === p.id ? null : p.id)}
-              badge={p.my_pov ? undefined : <span className="bp-chip">draft</span>}>
+              badge={p.my_pov ? undefined : <Chip>draft</Chip>}>
               <TextInput value={p.title} placeholder="POV title, e.g. 'Long-form beats short-form for solo creators'" onChange={(v) => patch(p.id, { title: v })} />
               <Field label="the common belief"><TextArea rows={2} value={p.common_belief} placeholder="What most people in your space believe." onChange={(v) => patch(p.id, { common_belief: orNull(v) })} /></Field>
               <Field label="my flip"><TextArea rows={2} value={p.my_pov} placeholder="What you believe instead." onChange={(v) => patch(p.id, { my_pov: orNull(v) })} /></Field>
               <Field label="why I believe this"><TextArea rows={3} value={p.story_behind} placeholder="The story or evidence behind it." onChange={(v) => patch(p.id, { story_behind: orNull(v) })} /></Field>
               <Field label="how I use it in content"><TextArea rows={2} value={p.how_i_use} placeholder="Where it shows up: hooks, videos, emails." onChange={(v) => patch(p.id, { how_i_use: orNull(v) })} /></Field>
-              <div className="bp-actions">
+              <div className={ACTIONS}>
                 <DeleteButton what={`"${p.title || 'this POV'}"`} onDelete={() => update((d) => ({ ...d, povs: d.povs.filter((x) => x.id !== p.id) }))} />
               </div>
             </ExpandRow>
@@ -270,32 +271,32 @@ export function ConnectionPanel({ doc, update }: Props) {
         <TextArea rows={4} value={override ?? auto} placeholder="Write your story above and a short draft appears here."
           onChange={(v) => setSlot(update, 'compressed_story', v === '' || v === auto ? null : v)} />
         {override && auto && (
-          <div><button type="button" className="bp-btn" onClick={() => setSlot(update, 'compressed_story', null)}>use the draft from my story</button></div>
+          <div><button type="button" className={GHOST_BTN} onClick={() => setSlot(update, 'compressed_story', null)}>Use the draft from my story</button></div>
         )}
       </Section>
 
       <Section title="where your story is placed" sub="Tick off where your story actually lives in the wild.">
-        <div className="bp-list">
+        <div className="flex flex-col gap-2">
           {doc.story_actions.map((a) => (
-            <div key={a.id} style={{ display: 'flex', gap: 6, alignItems: 'stretch' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
+            <div key={a.id} className="flex gap-2 items-stretch">
+              <div className="flex-1 min-w-0">
                 <Check label={a.label} hint={a.hint} done={a.done}
                   onToggle={() => update((d) => ({ ...d, story_actions: patchById(d.story_actions, a.id, { done: !a.done }) }))} />
               </div>
-              <button type="button" className="bp-btn" aria-label={`Remove "${a.label}"`} title="remove"
+              <button type="button" className={GHOST_BTN} aria-label={`Remove "${a.label}"`} title="remove"
                 onClick={() => { if (window.confirm(`Remove "${a.label}"?`)) update((d) => ({ ...d, story_actions: d.story_actions.filter((x) => x.id !== a.id) })); }}>×</button>
             </div>
           ))}
-          <form style={{ display: 'flex', gap: 6 }} onSubmit={(e) => {
+          <form className="flex gap-2" onSubmit={(e) => {
             e.preventDefault();
             const label = newAction.trim();
             if (!label) return;
             update((d) => ({ ...d, story_actions: [...d.story_actions, { id: newId('action'), label, done: false }] }));
             setNewAction('');
           }}>
-            <input className="bp-input" value={newAction} placeholder="Another place your story lives" aria-label="Another place your story lives"
+            <input className={INPUT} value={newAction} placeholder="Another place your story lives" aria-label="Another place your story lives"
               onChange={(e) => setNewAction(e.target.value)} />
-            <button type="submit" className="bp-btn" disabled={!newAction.trim()}>add</button>
+            <button type="submit" className={GHOST_BTN} disabled={!newAction.trim()}>Add</button>
           </form>
         </div>
       </Section>
@@ -316,17 +317,17 @@ function MicroStories({ stories, onChange }: {
   const confirmed = stories.filter((s) => s.status === 'confirmed');
   const candidates = stories.filter((s) => s.status === 'candidate');
   return (
-    <div className="bp-list">
+    <div className="flex flex-col gap-2">
       {confirmed.map((s) => (
         <ExpandRow key={s.id} open={openId === s.id} onToggle={() => setOpenId(openId === s.id ? null : s.id)}
-          title={s.title || (s.text ? `${s.text.slice(0, 90)}${s.text.length > 90 ? '...' : ''}` : <span className="bp-faint">untitled story</span>)}
+          title={s.title || (s.text ? `${s.text.slice(0, 90)}${s.text.length > 90 ? '...' : ''}` : <span className="text-zinc-500">Untitled story</span>)}
           badge={s.tags?.length ? <Tags tags={s.tags.slice(0, 2)} /> : undefined}>
           <TextInput value={s.title} placeholder="Short title (optional)" onChange={(v) => patch(s.id, { title: orNull(v) })} />
           <TextArea rows={5} value={s.text} placeholder="The story, in your words." onChange={(v) => patch(s.id, { text: v })} />
           <TextInput value={s.source_episode} placeholder="Where it came from (optional)" onChange={(v) => patch(s.id, { source_episode: orNull(v) })} />
           <TagsInput value={s.tags} onChange={(tags) => patch(s.id, { tags })} placeholder="topics, comma separated" />
-          <div className="bp-actions">
-            <button type="button" className="bp-btn" onClick={() => patch(s.id, { status: 'rejected' })}>hide</button>
+          <div className={ACTIONS}>
+            <button type="button" className={GHOST_BTN} onClick={() => patch(s.id, { status: 'rejected' })}>Hide</button>
             <DeleteButton what="this story" onDelete={() => onChange((all) => all.filter((x) => x.id !== s.id))} />
           </div>
         </ExpandRow>

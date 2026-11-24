@@ -1,5 +1,4 @@
 /** Brand area: shared header and tabs, then the current page. */
-import '@/components/solo/solo.css';
 import '@/components/brand/brand.css';
 import { BrandTabs } from '@/components/brand/brand-tabs';
 
