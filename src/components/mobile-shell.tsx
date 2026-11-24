@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
-  BRAND_ITEM,
+  ANALYTICS,
   CONTENT_ITEM,
   FOCUS_ITEM,
   SETUP_ITEM,
@@ -20,9 +20,9 @@ import {
 } from '@/components/nav';
 import { SoloIcon } from '@/components/solo-icons';
 
-// Tab bar: Focus, Content, Brand, then More (every other room, in nav order).
-const TABS = [FOCUS_ITEM, CONTENT_ITEM, BRAND_ITEM];
-const isTab = (href: string) => TABS.some((t) => t.href === href);
+// Tab bar: Focus, Content, Analytics (when its module is on), then More
+// (every other room, in nav order).
+const tabsFor = (analytics: boolean) => [FOCUS_ITEM, CONTENT_ITEM, ...(analytics ? [ANALYTICS] : [])];
 
 // Rooms whose page has a primary "add" action the + button can trigger.
 // The page listens for the `so:primary` window event.
@@ -48,7 +48,10 @@ export function MobileShell({ part }: { part: 'top' | 'bottom' }) {
   const [sheet, setSheet] = useState(false);
   const [role, setRole] = useState<'admin' | 'social'>('admin');
   const { light, toggle } = useTheme();
-  const groups = visibleNavGroups(useNavModules());
+  const modules = useNavModules();
+  const groups = visibleNavGroups(modules);
+  const TABS = tabsFor(modules.analytics);
+  const isTab = (href: string) => TABS.some((t) => t.href === href);
   // The More sheet: each nav group without the tab-bar rooms.
   const moreGroups = groups
     .map((g) => ({ ...g, items: g.items.filter((i) => !isTab(i.href)) }))

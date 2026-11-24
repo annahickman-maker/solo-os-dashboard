@@ -113,12 +113,12 @@ test("missing tables count as zero and are named", () => {
   assert.equal(boxes[2].rate, "0.0% of captured");
 });
 
-test("conversions follow the Sales and Pipeline modules", () => {
+test("conversions count every sale, whatever modules are on", () => {
   const inputs: FunnelInputs = { ...base, new_contacts: 10, paid: [{ currency: "AUD", total_minor: 1000, count: 1 }], won: { deals: 3, value_minor: 9000 } };
-  assert.deepEqual(funnelBoxes(summariseFunnel(inputs), { sales: false, pipeline: false }).map((b) => b.key), ["reach", "capture"]);
-  assert.equal(box(inputs, "conversions", { sales: true, pipeline: false }).value, "1");
-  assert.equal(box(inputs, "conversions", { sales: false, pipeline: true }).value, "3");
-  assert.equal(box(inputs, "conversions", { sales: false, pipeline: true }).href, "/crm/pipeline");
+  assert.deepEqual(funnelBoxes(summariseFunnel(inputs), { sales: false, pipeline: false }).map((b) => b.key), ["reach", "capture", "conversions"]);
+  assert.equal(box(inputs, "conversions", { sales: true, pipeline: false }).value, "4");
+  assert.equal(box(inputs, "conversions", { sales: false, pipeline: true }).value, "4");
+  assert.equal(box(inputs, "conversions", { sales: false, pipeline: true }).href, "/sales");
   assert.equal(funnelBoxes(null, both)[0].value, "-");
 });
 
@@ -270,9 +270,11 @@ test("offer steps: rates between steps, one decimal, and revenue in the home cur
   assert.equal(steps[2].rate_in, "100.0%");
   assert.equal(steps[2].detail, "2 orders, 1 deal won");
   assert.equal(steps[3].value, formatMinor(17700, "AUD"));
-  assert.equal(offerFunnelSteps(s, { sales: true, pipeline: false })[2].value, "2");
-  assert.deepEqual(offerFunnelSteps(s, { sales: false, pipeline: false }).map((b) => b.key), ["reach", "capture"]);
-  assert.deepEqual(offerFunnelSteps(s, { sales: false, pipeline: true }).map((b) => b.key), ["reach", "capture", "conversions"]);
+  assert.equal(offerFunnelSteps(s, { sales: true, pipeline: false })[2].value, "3");
+  const all = ["reach", "capture", "conversions", "revenue"];
+  assert.deepEqual(offerFunnelSteps(s, { sales: false, pipeline: false }).map((b) => b.key), all);
+  assert.deepEqual(offerFunnelSteps(s, { sales: false, pipeline: true }).map((b) => b.key), all);
+  assert.deepEqual(offerFunnelSteps(null, { sales: false, pipeline: false }).map((b) => b.key), all);
   const zero = offerFunnelSteps(summariseFunnel({ ...base, offer: s.offer }), both);
   assert.equal(zero[1].rate_in, "-");
   assert.equal(zero[2].rate_in, "-");

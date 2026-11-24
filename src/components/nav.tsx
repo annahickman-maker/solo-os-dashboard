@@ -28,7 +28,8 @@ export type NavEntry = NavItem & { module?: NavModuleKey };
 export type NavGroup = { label: string | null; items: NavEntry[] };
 export type ModuleNavItem = NavItem & { module: NavModuleKey; setupLabel: string };
 
-export const DEFAULT_NAV_MODULES: NavModules = { leads: true, pipeline: false, email: true, analytics: true, sales: false };
+// Sales is always on: every sale counts, whether or not the owner works with clients.
+export const DEFAULT_NAV_MODULES: NavModules = { leads: true, pipeline: false, email: true, analytics: true, sales: true };
 
 /** Fired on window (detail: NavDoc) after Setup saves, so the nav updates without a reload. */
 export const NAV_CHANGED_EVENT = 'so:nav';
@@ -41,9 +42,9 @@ export const MEMORY_ITEM: NavItem = { href: '/memory', label: 'Memory', iconName
 export const LIBRARY_ITEM: NavItem = { href: '/library', label: 'Library', iconName: 'library' };
 export const SETUP_ITEM: NavItem = { href: '/crm/settings', label: 'Setup', iconName: 'setup' };
 
-const ANALYTICS: ModuleNavItem = { href: '/crm/analytics', label: 'Analytics', iconName: 'analytics', module: 'analytics', setupLabel: 'Analytics' };
+export const ANALYTICS: ModuleNavItem = { href: '/crm/analytics', label: 'Analytics', iconName: 'analytics', module: 'analytics', setupLabel: 'Analytics' };
 const PIPELINE: ModuleNavItem = { href: '/crm/pipeline', label: 'Pipeline', iconName: 'pipeline', module: 'pipeline', setupLabel: 'Client pipeline' };
-const SALES: ModuleNavItem = { href: '/sales', label: 'Sales', iconName: 'sales', module: 'sales', setupLabel: 'Sales' };
+const SALES: NavItem = { href: '/sales', label: 'Sales', iconName: 'sales' };
 // Email has two tabs: Email automations (/crm/workflows) and All contacts (/crm/leads).
 const EMAIL: ModuleNavItem = { href: '/crm/workflows', label: 'Email', iconName: 'email', module: 'email', setupLabel: 'Email and contacts', also: ['/crm/leads'] };
 
@@ -55,7 +56,7 @@ export const NAV_GROUPS: NavGroup[] = [
 ];
 
 /** The optional rooms, in the order Setup lists their toggles. */
-export const MODULE_NAV: ModuleNavItem[] = [ANALYTICS, PIPELINE, SALES, EMAIL];
+export const MODULE_NAV: ModuleNavItem[] = [ANALYTICS, PIPELINE, EMAIL];
 
 export const NAV_ITEMS: NavItem[] = [...NAV_GROUPS.flatMap((g) => g.items), SETUP_ITEM];
 
@@ -66,6 +67,7 @@ export function normalizeNavDoc(value: unknown): NavDoc {
     const v = (raw as Record<string, unknown>)[key];
     if (typeof v === 'boolean') modules[key] = v;
   }
+  modules.sales = true;
   return { modules };
 }
 

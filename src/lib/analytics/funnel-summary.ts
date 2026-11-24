@@ -279,24 +279,26 @@ export function funnelBoxes(s: FunnelSummary | null | undefined, modules: Funnel
     detail: s ? "new email contacts" : "",
     rate: s ? `${formatRate(captured, reach)} of reach` : "",
   });
-  if (modules.sales || modules.pipeline) {
+  // Conversions always show: every sale counts, whatever modules are on.
+  {
     if (!s) {
-      boxes.push({ key: "conversions", href: modules.sales ? "/sales" : "/crm/pipeline", label: "Conversions (sales)", value: "-", detail: "", rate: "" });
+      boxes.push({ key: "conversions", href: "/sales", label: "Conversions (sales)", value: "-", detail: "", rate: "" });
     } else {
       const c = s.conversions;
-      const orders = modules.sales ? c.orders : 0;
-      const deals = modules.pipeline ? c.deals : 0;
+      // Every sale counts: orders and won deals, whatever modules are on.
+      const orders = c.orders;
+      const deals = c.deals;
       const total = orders + deals;
-      const revenue = (modules.sales ? c.order_revenue_minor : 0) + (modules.pipeline ? c.deal_revenue_minor : 0);
+      const revenue = c.order_revenue_minor + c.deal_revenue_minor;
       const parts: string[] = [formatMinor(revenue, s.home_currency)];
-      if (modules.sales && modules.pipeline) parts.push(`${plural(orders, "order")}, ${plural(deals, "deal")} won`);
+      if (modules.pipeline || deals) parts.push(`${plural(orders, "order")}, ${plural(deals, "deal")} won`);
       if (modules.sales) {
         const others = c.other.map((t) => formatMinor(t.total_minor, t.currency)).join(", ");
         if (others) parts.push(`plus ${others}`);
       }
       boxes.push({
         key: "conversions",
-        href: modules.sales ? "/sales" : "/crm/pipeline",
+        href: "/sales",
         label: "Conversions (sales)",
         value: count(total),
         detail: parts.join(" · "),
@@ -501,26 +503,24 @@ export function offerFunnelSteps(s: FunnelSummary | null | undefined, modules: F
       rate_in: s ? formatRate(captured, reach) : "-",
     },
   ];
-  if (!modules.sales && !modules.pipeline) return steps;
+  // All four boxes always show, whatever modules are on; empty ones read 0 or "-".
   const c = s?.conversions;
-  const orders = c && modules.sales ? c.orders : 0;
-  const deals = c && modules.pipeline ? c.deals : 0;
+  const orders = c ? c.orders : 0;
+  const deals = c ? c.deals : 0;
   const total = orders + deals;
   steps.push({
     key: "conversions",
     label: "Conversions (sales)",
     value: s ? count(total) : "-",
-    detail: s && modules.sales && modules.pipeline ? `${plural(orders, "order")}, ${plural(deals, "deal")} won` : "",
+    detail: s ? (modules.pipeline || deals ? `${plural(orders, "order")}, ${plural(deals, "deal")} won` : plural(orders, "order")) : "",
     rate_in: s ? formatRate(total, captured) : "-",
   });
-  if (modules.sales) {
-    const others = (c?.other ?? []).map((t) => formatMinor(t.total_minor, t.currency)).join(", ");
-    steps.push({
-      key: "revenue",
-      label: "Revenue",
-      value: s ? formatMinor(c?.order_revenue_minor ?? 0, s.home_currency) : "-",
-      detail: s && others ? `plus ${others}` : "",
-    });
-  }
+  const others = (c?.other ?? []).map((t) => formatMinor(t.total_minor, t.currency)).join(", ");
+  steps.push({
+    key: "revenue",
+    label: "Revenue",
+    value: s ? formatMinor(c?.order_revenue_minor ?? 0, s.home_currency) : "-",
+    detail: s && others ? `plus ${others}` : "",
+  });
   return steps;
 }
