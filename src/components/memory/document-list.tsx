@@ -1,16 +1,28 @@
 'use client';
 
-/** Everything in memory: filter by kind, search titles, newest first. */
+/**
+ * The archive: everything in memory behind a small "archive" toggle. Open,
+ * it filters by kind and lists each kind newest first.
+ */
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, EmptyState, GhostBtn, Loading } from '@/components/crm/kit';
-import { SectionHeading } from '@/components/solo/kit';
+import { FilterTabs } from '@/components/solo/kit';
 import { docDate, docHref, KIND_LABEL, type DocumentSummary, type Kind } from './types';
 
 const PAGE = 30;
 
-export function DocumentList({ refreshKey, kind = '' }: { refreshKey: number; kind?: '' | Kind }) {
+const KIND_TABS = [
+  { value: '', label: 'all' },
+  { value: 'conversation', label: 'conversations' },
+  { value: 'content', label: 'content' },
+  { value: 'note', label: 'notes' },
+];
+
+export function DocumentList({ refreshKey }: { refreshKey: number }) {
   const query = '';
+  const [open, setOpen] = useState(false);
+  const [kind, setKind] = useState<'' | Kind>('');
   const [docs, setDocs] = useState<DocumentSummary[] | null>(null);
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -35,9 +47,10 @@ export function DocumentList({ refreshKey, kind = '' }: { refreshKey: number; ki
   );
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reload when filters change
+    if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load when opened, reload when filters change
     void load(0);
-  }, [load, refreshKey]);
+  }, [open, load, refreshKey]);
 
   const groups = (Object.keys(KIND_LABEL) as Kind[])
     .map((k) => ({ kind: k, items: (docs || []).filter((d) => d.kind === k) }))
@@ -46,9 +59,19 @@ export function DocumentList({ refreshKey, kind = '' }: { refreshKey: number; ki
   if (other.length) groups.push({ kind: 'note', items: other });
 
   return (
-    <section className="flex flex-col gap-6">
-      <SectionHeading label="transcripts" count={docs ? total : undefined} />
-      {error ? (
+    <section className="flex flex-col gap-4">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className="self-start flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wide text-zinc-400 hover:text-white"
+      >
+        <span aria-hidden style={{ display: 'inline-block', transition: 'transform 150ms', transform: open ? 'rotate(90deg)' : 'none' }}>›</span>
+        archive
+        {open && docs && <span className="font-normal text-zinc-500">{total}</span>}
+      </button>
+      {open && <FilterTabs ariaLabel="kind" options={KIND_TABS} value={kind} onChange={(v) => setKind(v as '' | Kind)} />}
+      {!open ? null : error ? (
         <p role="alert" className="text-[13px] text-red-400">
           {error}
         </p>

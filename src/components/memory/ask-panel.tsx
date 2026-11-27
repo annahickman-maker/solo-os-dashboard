@@ -4,8 +4,9 @@
  * Ask your memory: a question in, an answer grounded in your own words out,
  * with the passages it came from. "Search only" skips Claude (free).
  */
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 import { api } from '@/components/crm/kit';
 import { solidButtonStyle } from '@/components/solo/kit';
 import { docDate, docHref, KIND_LABEL, type Hit, type Source } from './types';
@@ -64,9 +65,17 @@ export function AskPanel() {
   const [hits, setHits] = useState<{ mode: string; results: Hit[] } | null>(null);
   const [error, setError] = useState('');
   const [keyMissing, setKeyMissing] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
-  const search = async () => {
-    const q = question.trim();
+  // Six questions written from the published Brand Playbook (none without one).
+  useEffect(() => {
+    api<{ questions: string[] }>('/api/memory/suggestions')
+      .then((r) => setSuggestions(r.questions || []))
+      .catch(() => setSuggestions([]));
+  }, []);
+
+  const search = async (asking?: string) => {
+    const q = (asking ?? question).trim();
     if (q.length < 2) return;
     setBusy('search');
     setError('');
@@ -80,8 +89,8 @@ export function AskPanel() {
     }
   };
 
-  const ask = async () => {
-    const q = question.trim();
+  const ask = async (asking?: string) => {
+    const q = (asking ?? question).trim();
     if (q.length < 3) return;
     setBusy('ask');
     setError('');
@@ -99,7 +108,7 @@ export function AskPanel() {
           setKeyMissing(true);
           setError(data.error);
           setBusy('');
-          await search();
+          await search(q);
           return;
         }
         throw new Error(data.error || `Request failed (${res.status})`);
@@ -137,6 +146,26 @@ export function AskPanel() {
             {busy ? 'Reading…' : keyMissing ? 'Search' : 'Ask'}
           </button>
         </div>
+        {suggestions.length > 0 && !answer && !hits && !busy && (
+          <ul aria-label="Suggested questions" className="flex flex-col gap-2">
+            {suggestions.map((q) => (
+              <li key={q}>
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-3 text-left rounded-lg transition-colors hover:brightness-110"
+                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', padding: '10px 14px', fontSize: 'var(--body-sm)', cursor: 'pointer' }}
+                  onClick={() => {
+                    setQuestion(q);
+                    void (keyMissing ? search(q) : ask(q));
+                  }}
+                >
+                  <Sparkles aria-label="AI suggestion" className="w-4 h-4 shrink-0" style={{ color: 'var(--accent)' }} />
+                  <span>{q}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
         {!keyMissing && question.trim().length >= 2 && (
           <button
             type="button"
