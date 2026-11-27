@@ -1,32 +1,24 @@
 'use client';
 
 /**
- * Memory: your own words, searchable. Ask a question and get an answer
- * from your transcripts and notes with the sources, browse everything, and
+ * Memory: your own words, searchable. Ask a question (or pick a suggested
+ * one) and get an answer from your transcripts and notes with the sources,
+ * browse everything in the archive, and
  * add more by pasting or uploading. Automatic imports are set up in
  * Setup > Memory connections (MEMORY.md).
  */
 import { useState } from 'react';
 import Link from 'next/link';
 import { useToast } from '@/components/crm/kit';
-import { FilterTabs, ghostButtonStyle, solidButtonStyle } from '@/components/solo/kit';
-import type { Kind } from '@/components/memory/types';
+import { ghostButtonStyle, solidButtonStyle } from '@/components/solo/kit';
 import { AddDocument } from '@/components/memory/add-document';
 import { AskPanel } from '@/components/memory/ask-panel';
 import { DocumentList } from '@/components/memory/document-list';
-
-const KIND_TABS = [
-  { value: '', label: 'all' },
-  { value: 'conversation', label: 'conversations' },
-  { value: 'content', label: 'content' },
-  { value: 'note', label: 'notes' },
-];
 
 export default function MemoryPage() {
   const { show, node: toastNode } = useToast();
   const [adding, setAdding] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [kind, setKind] = useState<'' | Kind>('');
 
   return (
     <div className="stack wide">
@@ -41,9 +33,8 @@ export default function MemoryPage() {
         </div>
       </div>
 
-      <FilterTabs ariaLabel="kind" options={KIND_TABS} value={kind} onChange={(v) => setKind(v as '' | Kind)} />
       <AskPanel />
-      <DocumentList refreshKey={refreshKey} kind={kind} />
+      <DocumentList refreshKey={refreshKey} />
 
       {adding && (
         <AddDocument

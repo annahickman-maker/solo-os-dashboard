@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 const db = () => createAdminClient() as any;
 
 /** Keys the dashboard may store. Add a key here before a page uses it. */
-export const SOLO_DOC_KEYS = ["focus", "reputation", "offer", "nav", "longform", "shortform"] as const;
+export const SOLO_DOC_KEYS = ["focus", "reputation", "offer", "nav", "longform", "shortform", "memory_suggestions"] as const;
 export type SoloDocKey = (typeof SOLO_DOC_KEYS)[number];
 
 export function isSoloDocKey(key: string): key is SoloDocKey {

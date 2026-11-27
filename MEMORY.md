@@ -4,7 +4,18 @@ Memory keeps your own words where you can find them again: call and meeting
 transcripts, video captions, voice notes and written notes. On the Memory page
 you ask a question and get an answer built from what you actually said, with
 the sources (title, date, the passage, a link to the full document). You can
-also browse and search everything, and add more by pasting or uploading.
+also browse everything in the archive, and add more by pasting or uploading.
+
+- **Suggested questions.** Once a Brand Playbook is published, six questions
+  appear under the search bar, each marked with a sparkle as AI suggestions.
+  Claude writes them once from the playbook's audience research (pain points,
+  the audience's own words, desires, failed fixes) using your
+  `ANTHROPIC_API_KEY`, and keeps them in the solo document
+  `memory_suggestions` (`GET /api/memory/suggestions`). A newly published
+  playbook gets new questions. Without a playbook or a key, none are shown.
+  Click one to ask it.
+- **Archive.** The transcripts and notes sit behind a small "archive" toggle,
+  closed by default. Open, it filters by kind and lists each kind newest first.
 
 Everything lives in your own Supabase database. Nothing is shared.
 

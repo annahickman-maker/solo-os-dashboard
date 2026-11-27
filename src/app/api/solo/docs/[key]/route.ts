@@ -21,6 +21,7 @@ const SCOPES: Record<SoloDocKey, { read: Scope; write: Scope } | null> = {
   offer: { read: "brand:read", write: "brand:write" },
   longform: { read: "content:read", write: "content:write" },
   shortform: { read: "content:read", write: "content:write" },
+  memory_suggestions: { read: "memory:read", write: "memory:write" },
   focus: null,
   nav: null,
 };
